@@ -1,4 +1,5 @@
-from collections.abc import Optional
+from typing import Optional
+import copy
 from PIL import Image,ImageDraw
 import os
 

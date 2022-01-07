@@ -1,0 +1,12 @@
+numpy
+pandas
+matplotlib
+torch 
+torchvision 
+torchaudio
+pytorch-lightning
+tensorboard
+easydict
+mxnet
+onnx
+sklearn

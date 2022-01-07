@@ -1,7 +1,9 @@
 from torchvision.datasets.vision import VisionDataset
-from collections.abc import Optional,Callable,Tuple,Any
+from collections.abc import Callable
+from typing import Optional, Tuple, Any
+import os
 import csv
-from .utils import IrisImage
+from utils import IrisImage
 
 class IrisDataset(VisionDataset):
     def __init__(
@@ -22,10 +24,9 @@ class IrisDataset(VisionDataset):
         }
 
         image_sets_filters = {
-            "train" : ( lambda x , _ : x%20 < 15                ),
-            "val"   : ( lambda x , _ : x%20 >= 15 and x%20 < 18 ),
-            "test"  : ( lambda x , _ : x%20 >= 18               ),
-            "verification": ( lambda x , _ : True)
+            "train" : ( lambda x: x[0]%20 < 15                   ),
+            "val"   : ( lambda x: x[0]%20 >= 15 and x[0]%20 < 18 ),
+            "test"  : ( lambda x: x[0]%20 >= 18                  )
         }
 
         assert mode in modes, f"Unsupported dataset mode {mode}, allowed option are {', '.join(i for i in modes)}"
@@ -38,6 +39,8 @@ class IrisDataset(VisionDataset):
         self.anotations = dict()
         self.subjects_set = dict()
         self.subjects = list()
+        
+        self.picked_subjects = None
 
         self.pairs = list()
         self.impostors = list()
@@ -55,13 +58,17 @@ class IrisDataset(VisionDataset):
                 subject_id = entry[subject_id_idx]
                 eye_side = entry[eye_side_idx]
                 subject_id_combined = f"{subject_id}_{eye_side}"
+
                 if not subject_id_combined in self.subjects_set:
                     self.subjects_set[subject_id_combined] = list()
+                
                 self.subjects_set[subject_id_combined].append(len(self.subjects))
                 self.subjects.append( (subject_id_combined, dataset_dir, i+1) )
 
         self.subject_to_id_dict = dict(map((lambda x : (x[1],x[0])), enumerate(self.subjects_set)))
         self.id_to_subject_dict = dict(enumerate(self.subjects_set))
+        
+        self.picked_subjects = list(map(lambda x: x[1], filter(image_sets_filters[image_set], enumerate(self.subjects))))
     def __getitem__(self, index: int) -> Tuple[Any, Any]:
         """
         Args:
@@ -70,7 +77,7 @@ class IrisDataset(VisionDataset):
             tuple: (image, target) where target is a tuple of all target types
         """
 
-        subject = self.subjects[index]
+        subject = self.picked_subjects[index]
         header = self.anotations[subject[1]][0]
         param_list = self.anotations[subject[1]][subject[2]]
         dataset_root = subject[1]
@@ -99,4 +106,4 @@ class IrisDataset(VisionDataset):
 
         return img, target
     def __len__(self) -> int:
-        return len(self.subjects)
+        return len(self.picked_subjects)
