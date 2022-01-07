@@ -61,7 +61,7 @@ def evaluate(model: torch.nn.Module, metric_fc: torch.nn.Module, criterion: torc
     header = f"Test: "
 
     with torch.inference_mode():
-        for i, (image, target) in metric_logger.log_every(data_loader, print_freq, header):
+        for image, target in metric_logger.log_every(data_loader, print_freq, header):
             start_time = time.time()
             image, target = image.to(device), target.to(device)
             feature = model(image)
