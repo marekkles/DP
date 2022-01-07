@@ -5,7 +5,6 @@ from torchvision.transforms.functional import InterpolationMode
 from backbones import *
 from datasets import *
 from arcface.losses import *
-from configs import *
 import utils
 import presets
 import time
