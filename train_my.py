@@ -148,7 +148,7 @@ def main(args):
     for epoch in range(args.start_epoch, args.epochs):
         train_one_epoch(model, metric_fc, criterion, optimizer, data_loader, device, epoch, args)
         lr_scheduler.step()
-        evaluate(model, criterion, data_loader_test, device=device)
+        evaluate(model, metric_fc, criterion, data_loader_test, device=device)
         #save checkpoint
         if args.output_dir:
             checkpoint = {
