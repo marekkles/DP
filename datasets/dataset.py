@@ -3,7 +3,7 @@ from collections.abc import Callable
 from typing import Optional, Tuple, Any
 import os
 import csv
-from utils import IrisImage
+from .utils import IrisImage
 
 class IrisDataset(VisionDataset):
     def __init__(
@@ -69,6 +69,8 @@ class IrisDataset(VisionDataset):
         self.id_to_subject_dict = dict(enumerate(self.subjects_set))
         
         self.picked_subjects = list(map(lambda x: x[1], filter(image_sets_filters[image_set], enumerate(self.subjects))))
+        self.num_classes = len(self.subjects_set)
+
     def __getitem__(self, index: int) -> Tuple[Any, Any]:
         """
         Args:

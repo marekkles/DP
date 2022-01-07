@@ -15,7 +15,7 @@ from torchvision.transforms.functional import InterpolationMode
 
 from datasets import IrisDataset
 from backbones import get_model
-from arcface import ArcFace
+#from arcface import ArcFace
 
 try:
     from torchvision.prototype import models as PM
@@ -203,7 +203,7 @@ def main(args):
     dataset, dataset_test, train_sampler, test_sampler = load_data(train_dir, val_dir, args)
 
     collate_fn = None
-    num_classes = len(dataset.classes)
+    num_classes = dataset.num_classes
     mixup_transforms = []
     if args.mixup_alpha > 0.0:
         mixup_transforms.append(transforms.RandomMixup(num_classes, p=1.0, alpha=args.mixup_alpha))
@@ -212,6 +212,7 @@ def main(args):
     if mixup_transforms:
         mixupcutmix = torchvision.transforms.RandomChoice(mixup_transforms)
         collate_fn = lambda batch: mixupcutmix(*default_collate(batch))  # noqa: E731
+    
     data_loader = torch.utils.data.DataLoader(
         dataset,
         batch_size=args.batch_size,
@@ -374,7 +375,8 @@ def get_args_parser(add_help=True):
 
     parser = argparse.ArgumentParser(description="PyTorch Classification Training", add_help=add_help)
 
-    parser.add_argument("--data-path", default="../Datasets/train_iris_nd_crosssensor_2013", type=str, help="dataset path")
+    #parser.add_argument("--data-path", default="../Datasets/train_iris_nd_crosssensor_2013", type=str, help="dataset path")
+    parser.add_argument("--data-path", default="../Datasets/train_iris_casia_v4", type=str, help="dataset path")
     parser.add_argument("--model", default="resnet18", type=str, help="model name")
     parser.add_argument("--device", default="cpu", type=str, help="device (Use cuda or cpu Default: cpu)")
     parser.add_argument(
