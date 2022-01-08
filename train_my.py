@@ -136,7 +136,13 @@ def main(args):
     
     print("Creating model")
     
-    model = iresnet18(num_features=args.embedding_size, dropout=0.5)
+    if args.model == "iresnet18":
+        model = iresnet18(num_features=args.embedding_size, dropout=0.5)
+    elif args.model == "iresnet50":
+        model = iresnet50(num_features=args.embedding_size, dropout=0.5)
+    else:
+        assert False, f"Cannot create given model {args.model}"
+    
     model.to(device)
     metric_fc = ArcFaceMetric(args.embedding_size, dataset.num_classes)
     metric_fc.to(device)
