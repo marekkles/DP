@@ -14,6 +14,7 @@ from datasets import IrisVerificationDataset
 from backbones import get_model
 
 def main(args):
+    print(args)
     print(f"Loading model from {args.model_path}",end="")
     path = os.path.join(args.model_path)
     
