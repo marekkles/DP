@@ -11,9 +11,10 @@ import datetime
 def get_score(
     model: torch.nn.Module, 
     image: torch.Tensor, 
+    device,
     T : int = 100,
     alpha : float = 130.0,
-    r : float = 0.88
+    r : float = 0.88,
 ) -> float:
     """
     Calculates the SER-FIQ score for a given aligned image using T passes.
@@ -35,7 +36,7 @@ def get_score(
     SER-FIQ score : float
     """
     with torch.no_grad():
-        repeated_image = image.repeat(T,1,1,1)
+        repeated_image = image.repeat(T,1,1,1).to(device)
         embeddings = model(repeated_image)
         norm = torch.nn.functional.normalize(embeddings,dim=1)
         eucl_dist = torch.cdist(norm, norm)
@@ -50,7 +51,8 @@ def main(args):
     print(f"Loading model from {args.model_path}",end="")
     path = os.path.join(args.model_path)
     
-    checkpoint = torch.load(path, map_location=torch.device(args.device))
+    device = torch.device(args.device)
+    checkpoint = torch.load(path, map_location=device)
     
     if args.model == "iresnet18":
         model = iresnet18(num_features=args.embedding_size, dropout=0.5)
@@ -60,6 +62,7 @@ def main(args):
         assert False, f"Cannot create given model {args.model}"
     
     model.load_state_dict(checkpoint["model"])
+    model = model.to(device)
     model.eval()
     for m in model.modules():
       if m.__class__.__name__.startswith('Dropout'):
@@ -82,7 +85,7 @@ def main(args):
         time_passed = datetime.timedelta(seconds=int(time.time() - start))
         time_est = None if bn == 0 else (time_passed/(bn) * len(dataset_eval)) - time_passed
         print(f"Processed: {bn/len(dataset_eval)*100:.2f}%, est: {time_est} [h:m:s]\r", end="")
-        score = get_score(model, image)
+        score = get_score(model, image, device)
         score_dict[target] = score
     print(f"\nSaving embeddings to {args.output}")
     savepoint = {"scores":score_dict}
