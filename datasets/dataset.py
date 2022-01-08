@@ -1,9 +1,82 @@
 from torchvision.datasets.vision import VisionDataset
+import torch
 from collections.abc import Callable
 from typing import Optional, Tuple, Any
 import os
 import csv
 from .utils import IrisImage
+
+
+from torchvision.datasets.vision import VisionDataset
+from collections.abc import Callable
+from typing import Optional, Tuple, Any
+import os
+import csv
+from datasets.utils import IrisImage
+
+class IrisVerificationDataset(VisionDataset):
+    def __init__(
+        self, 
+        root: list,
+        autocrop: bool = True,
+        transform: Optional[Callable] = None, 
+        transforms: Optional[Callable] = None, 
+        target_transform: Optional[Callable] = None
+    ) -> None:
+        super().__init__(root, transform=transform, transforms=transforms, target_transform=target_transform)
+        
+        self.anotations = None
+        self.autocrop = autocrop
+        self.tmp_img = IrisImage()
+        self.mapping    = None
+        self.pairs      = None
+        self.impostors  = None
+
+        with open(os.path.join(root, 'annotations.csv'), newline='') as csvfile:
+            csv_file = csv.reader(csvfile, delimiter=',', quotechar='"')
+            self.anotations = list(csv_file)
+        with open(os.path.join(root, 'mapping.csv'), newline='') as csvfile:
+            csv_file = csv.reader(csvfile, delimiter=',', quotechar='"')
+            self.mapping = list(csv_file)
+        with open(os.path.join(root, 'pairs.csv'), newline='') as csvfile:
+            csv_file = csv.reader(csvfile, delimiter=',', quotechar='"')
+            self.pairs = list(csv_file)
+        with open(os.path.join(root, 'impostors.csv'), newline='') as csvfile:
+            csv_file = csv.reader(csvfile, delimiter=',', quotechar='"')
+            self.impostors = list(csv_file)
+        
+        self.mapping = dict(map(lambda x: (x[1],x[0]), self.mapping[1:]))
+
+        self.header = self.anotations[0]
+        self.image_id_idx = self.header.index('image_id')
+
+        self.anotations_map = dict(map(lambda i: (i[self.image_id_idx], i), self.anotations[1:]))
+
+    def __getitem__(self, index: int) -> torch.Tensor:
+        """
+        Args:
+            index (int): Index
+        Returns:
+            tuple: (image, target) where target is a tuple of all target types
+        """
+        anotation_index = str(index+1)
+        param_list = self.anotations_map[self.mapping[anotation_index]]
+        param_list[self.image_id_idx] = anotation_index
+        dataset_root = self.root
+
+        self.tmp_img.update(self.header,param_list,dataset_root)
+        
+        if self.autocrop:
+            self.tmp_img.crop()
+
+        img = self.tmp_img.get()
+
+        if self.transform is not None:
+            img = self.transform(img)
+        
+        return img, int(anotation_index)
+    def __len__(self) -> int:
+        return len(self.mapping)
 
 class IrisDataset(VisionDataset):
     def __init__(
