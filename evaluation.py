@@ -18,8 +18,14 @@ def main(args):
     path = os.path.join(args.model_path)
     
     checkpoint = torch.load(path, map_location=torch.device(args.device))
-
-    model = iresnet18(num_features=args.embedding_size, dropout=0.5)
+    
+    if args.model == "iresnet18":
+        model = iresnet18(num_features=args.embedding_size, dropout=0.5)
+    elif args.model == "iresnet50":
+        model = iresnet50(num_features=args.embedding_size, dropout=0.5)
+    else:
+        assert False, f"Cannot create given model {args.model}"
+    
     model.load_state_dict(checkpoint["model"])
     model.eval()
     print(": done")
