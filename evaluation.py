@@ -17,7 +17,8 @@ def main(args):
     print(f"Loading model from {args.model_path}",end="")
     path = os.path.join(args.model_path)
     
-    checkpoint = torch.load(path, map_location=torch.device(args.device))
+    device = torch.device(args.device)
+    checkpoint = torch.load(path, map_location=device)
     
     if args.model == "iresnet18":
         model = iresnet18(num_features=args.embedding_size, dropout=0.5)
@@ -25,9 +26,11 @@ def main(args):
         model = iresnet50(num_features=args.embedding_size, dropout=0.5)
     else:
         assert False, f"Cannot create given model {args.model}"
-    
+
     model.load_state_dict(checkpoint["model"])
+    model = model.to(device)
     model.eval()
+
     print(": done")
 
     print("Loading dataset", end="")
@@ -47,15 +50,40 @@ def main(args):
     )
     print(": done")
 
-    print("Creating embeddings")
-    embedding_dict = {}
-    for bn, (image, target) in enumerate(data_loader_val):
-        print(f"Processed: {bn*args.batch_size/len(dataset_eval)*100}%\r", end="")
-        embedding = model(image)
-        for i in range(embedding.shape[0]):
-            embedding_dict[target[i].item()] = embedding[i].detach()
-    print(f"\nSaving embeddings to {args.output}")
-    savepoint = {"embeddings":embedding_dict}
+    
+    with torch.no_grad():
+        print("Creating embeddings")
+        embedding_dict = {}
+        for bn, (image, target) in enumerate(data_loader_val):
+            print(f"Processed: {bn*args.batch_size/len(dataset_eval)*100:.2f}%\r", end="")
+            image = image.to(device)
+            embedding = model(image)
+            for i in range(embedding.shape[0]):
+                embedding_dict[target[i].item()] = embedding[i].detach()
+    
+        print("Evaluating impostors distances")
+        impostor_dict = {"euclidean":{},"cosine":{}}
+        for i, (a, b) in enumerate(dataset_eval.impostors):
+            if (not a in embedding_dict) or (not b in embedding_dict):
+                continue
+            print(f"Processed: {i/len(dataset_eval.impostors)*100:.2f}%\r", end="")
+            impostor_dict["euclidean"][(a,b)] = (embedding_dict[a] - embedding_dict[b]).pow(2).sum().pow(0.5)
+            impostor_dict["cosine"][(a,b)] = torch.nn.functional.cosine_similarity(embedding_dict[a], embedding_dict[b])
+            break
+    
+        print("Evaluating pairs distances")
+        pair_dict = {"euclidean":{},"cosine":{}}
+        for i, (a, b) in enumerate(dataset_eval.pairs):
+            if (not a in embedding_dict) or (not b in embedding_dict):
+                continue
+            print(f"Processed: {i/len(dataset_eval.pairs)*100:.2f}%\r", end="")
+            pair_dict["euclidean"][(a,b)] = (embedding_dict[a] - embedding_dict[b]).pow(2).sum().pow(0.5)
+            pair_dict["cosine"][(a,b)] = torch.nn.functional.cosine_similarity(embedding_dict[a], embedding_dict[b])
+            break
+
+    
+    print(f"\nSaving results to {args.output}")
+    savepoint = {"embeddings":embedding_dict, "impostor_scores": impostor_dict, "pair_scores": impostor_dict}
     torch.save(savepoint, args.output)
 
 def get_args_parser(add_help=True):
@@ -63,7 +91,7 @@ def get_args_parser(add_help=True):
     parser = argparse.ArgumentParser(description="ArcFace model evaluation :get: embeddings", add_help=add_help)
 
     parser.add_argument("--data-path", default="../Datasets/iris_verification_NDCSI2013_01_05", type=str, help="dataset path")
-    parser.add_argument("--model", default="resnet18", type=str, help="model name")
+    parser.add_argument("--model", default="iresnet18", type=str, help="model name")
     parser.add_argument("--model-path", default=os.path.join("..","models","iresnet18","model_47.pth"), type=str, help="path to model .pth file")
     parser.add_argument("--embedding-size", default=128, type=int, help="size of emdedding space (default: 128)")
     parser.add_argument("--device", default="cpu", type=str, help="device (Use cuda or cpu Default: cpu)")
