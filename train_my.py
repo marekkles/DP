@@ -33,6 +33,7 @@ def train_one_epoch(model: torch.nn.Module, metric_fc: torch.nn.Module, criterio
 
     print(f"Epoch: [{epoch}]")
     for i, (image, target) in enumerate(metric_logger.log_every(data_loader, args.print_freq, header)):
+        print(f"Batch {i}\r", end="")
         start_time = time.time()
         image, target = image.to(device), target.to(device)
 
@@ -56,7 +57,6 @@ def evaluate(model: torch.nn.Module, metric_fc: torch.nn.Module, criterion: torc
     metric_fc.eval()
     
     metric_logger = utils.MetricLogger(delimiter="  ")
-    metric_logger.add_meter("lr", utils.SmoothedValue(window_size=1, fmt="{value}"))
     metric_logger.add_meter("img/s", utils.SmoothedValue(window_size=10, fmt="{value}"))
     header = f"Test: "
 
@@ -72,6 +72,7 @@ def evaluate(model: torch.nn.Module, metric_fc: torch.nn.Module, criterion: torc
             metric_logger.update(loss=loss.item())
             metric_logger.meters["acc1"].update(acc1.item(), n=batch_size)
             metric_logger.meters["acc5"].update(acc5.item(), n=batch_size)
+            metric_logger.meters["img/s"].update(batch_size / (time.time() - start_time))
     
     metric_logger.synchronize_between_processes()
     print(f"{header} Acc@1 {metric_logger.acc1.global_avg:.3f} Acc@5 {metric_logger.acc5.global_avg:.3f}")
