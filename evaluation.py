@@ -63,6 +63,9 @@ def main(args):
             embedding = model(image)
             for i in range(embedding.shape[0]):
                 embedding_dict[target[i].item()] = embedding[i].detach()
+            
+            #if bn == 20:
+            #    break
     
         print("Evaluating impostors distances")
         impostor_dict = {"euclidean":{},"cosine":{}}
@@ -85,7 +88,7 @@ def main(args):
     
     print(f"\nSaving results to {args.output}")
     savepoint = {"embeddings":embedding_dict, "impostor_scores": impostor_dict, "pair_scores": pair_dict}
-    print(f"Saved:\n\t{len(embedding_dict)} embeddings\n\t{len(impostor_dict)} impostors scores\n\t{len(pair_dict)} pairs scores")
+    print(f"Saved:\n\t{len(embedding_dict)} embeddings\n\t{len(impostor_dict['euclidean'])} impostors scores\n\t{len(pair_dict['euclidean'])} pairs scores")
     torch.save(savepoint, args.output)
 
 def get_args_parser(add_help=True):
