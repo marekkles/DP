@@ -58,7 +58,7 @@ def main(args):
         embedding_dict = {}
         for bn, (image, target) in enumerate(data_loader_val):
             time_passed = datetime.timedelta(seconds=int(time.time() - start))
-            time_est = None if bn == 0 else time_passed/(bn*args.batch_size) * len(dataset_eval)
+            time_est = None if bn == 0 else (time_passed/(bn*args.batch_size) * len(dataset_eval)) - time_passed
             print(f"Processed: {bn*args.batch_size/len(dataset_eval)*100:.2f}%, est: {time_est} [h:m:s]\r", end="")
             image = image.to(device)
             embedding = model(image)

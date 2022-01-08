@@ -5,6 +5,8 @@ from torch._C import dtype
 from backbones import *
 from datasets import *
 from torchvision.transforms import transforms
+import time
+import datetime
 
 def get_score(
     model: torch.nn.Module, 
@@ -32,16 +34,17 @@ def get_score(
     -------
     SER-FIQ score : float
     """
-    repeated_image = image.repeat(T,1,1,1)
-    embeddings = model(repeated_image)
-    norm = torch.nn.functional.normalize(embeddings,dim=1)
-    eucl_dist = torch.cdist(norm, norm)
-    idx = torch.triu_indices(T,T,1)
-    eucl_dist_triu = eucl_dist[idx[0],idx[1]]
-    eucl_dist_mean = torch.mean(eucl_dist_triu)
-    score = 2*(1 / ( 1 + eucl_dist_mean.exp() ))
-    score = 1 / (1 + torch.exp( - (alpha * (score - r))))
-    return score
+    with torch.no_grad():
+        repeated_image = image.repeat(T,1,1,1)
+        embeddings = model(repeated_image)
+        norm = torch.nn.functional.normalize(embeddings,dim=1)
+        eucl_dist = torch.cdist(norm, norm)
+        idx = torch.triu_indices(T,T,1)
+        eucl_dist_triu = eucl_dist[idx[0],idx[1]]
+        eucl_dist_mean = torch.mean(eucl_dist_triu)
+        score = 2*(1 / ( 1 + eucl_dist_mean.exp() ))
+        score = 1 / (1 + torch.exp( - (alpha * (score - r))))
+    return score.item()
 
 def main(args):
     print(f"Loading model from {args.model_path}",end="")
@@ -73,10 +76,13 @@ def main(args):
     print(": done")
 
     print("Generating scores")
+    start = time.time()
     score_dict = {}
     for bn, (image, target) in enumerate(dataset_eval):
-        print(f"Processed: {bn/len(dataset_eval)*100:.2f}%\r", end="")
-        score = get_score(model, image).detach().item()
+        time_passed = datetime.timedelta(seconds=int(time.time() - start))
+        time_est = None if bn == 0 else (time_passed/(bn) * len(dataset_eval)) - time_passed
+        print(f"Processed: {bn/len(dataset_eval)*100:.2f}%, est: {time_est} [h:m:s]\r", end="")
+        score = get_score(model, image)
         score_dict[target] = score
     print(f"\nSaving embeddings to {args.output}")
     savepoint = {"scores":score_dict}
