@@ -53,9 +53,12 @@ def main(args):
     
     with torch.no_grad():
         print("Creating embeddings")
+        start = time.time()
         embedding_dict = {}
         for bn, (image, target) in enumerate(data_loader_val):
-            print(f"Processed: {bn*args.batch_size/len(dataset_eval)*100:.2f}%\r", end="")
+            time_passed = datetime.timedelta(seconds=int(time.time() - start))
+            time_est = None if bn == 0 else time_passed/(bn*args.batch_size) * len(dataset_eval)
+            print(f"Processed: {bn*args.batch_size/len(dataset_eval)*100:.2f}%, est: {time_est} [h:m:s]\r", end="")
             image = image.to(device)
             embedding = model(image)
             for i in range(embedding.shape[0]):
@@ -95,7 +98,7 @@ def get_args_parser(add_help=True):
     parser.add_argument("--embedding-size", default=128, type=int, help="size of emdedding space (default: 128)")
     parser.add_argument("--device", default="cpu", type=str, help="device (Use cuda or cpu Default: cpu)")
     parser.add_argument(
-        "-b", "--batch-size", default=64, type=int, help="images per gpu, the total batch size is $NGPU x batch_size"
+        "-b", "--batch-size", default=128, type=int, help="images per gpu, the total batch size is $NGPU x batch_size"
     )
     parser.add_argument(
         "-j", "--workers", default=4, type=int, metavar="N", help="number of data loading workers (default: 16)"
