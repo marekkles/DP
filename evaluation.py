@@ -64,26 +64,25 @@ def main(args):
         print("Evaluating impostors distances")
         impostor_dict = {"euclidean":{},"cosine":{}}
         for i, (a, b) in enumerate(dataset_eval.impostors):
+            print(f"Processed: {i/len(dataset_eval.impostors)*100:.2f}%\r", end="")
             if (not a in embedding_dict) or (not b in embedding_dict):
                 continue
-            print(f"Processed: {i/len(dataset_eval.impostors)*100:.2f}%\r", end="")
-            impostor_dict["euclidean"][(a,b)] = (embedding_dict[a] - embedding_dict[b]).pow(2).sum().pow(0.5)
-            impostor_dict["cosine"][(a,b)] = torch.nn.functional.cosine_similarity(embedding_dict[a], embedding_dict[b])
-            break
+            impostor_dict["euclidean"][(a,b)] = (embedding_dict[a] - embedding_dict[b]).pow(2).sum().pow(0.5).item()
+            impostor_dict["cosine"][(a,b)] = torch.nn.functional.cosine_similarity(embedding_dict[a], embedding_dict[b]).item()
     
         print("Evaluating pairs distances")
         pair_dict = {"euclidean":{},"cosine":{}}
         for i, (a, b) in enumerate(dataset_eval.pairs):
+            print(f"Processed: {i/len(dataset_eval.pairs)*100:.2f}%\r", end="")
             if (not a in embedding_dict) or (not b in embedding_dict):
                 continue
-            print(f"Processed: {i/len(dataset_eval.pairs)*100:.2f}%\r", end="")
-            pair_dict["euclidean"][(a,b)] = (embedding_dict[a] - embedding_dict[b]).pow(2).sum().pow(0.5)
-            pair_dict["cosine"][(a,b)] = torch.nn.functional.cosine_similarity(embedding_dict[a], embedding_dict[b])
-            break
+            pair_dict["euclidean"][(a,b)] = (embedding_dict[a] - embedding_dict[b]).pow(2).sum().pow(0.5).item()
+            pair_dict["cosine"][(a,b)] = torch.nn.functional.cosine_similarity(embedding_dict[a], embedding_dict[b]).item()
 
     
     print(f"\nSaving results to {args.output}")
-    savepoint = {"embeddings":embedding_dict, "impostor_scores": impostor_dict, "pair_scores": impostor_dict}
+    savepoint = {"embeddings":embedding_dict, "impostor_scores": impostor_dict, "pair_scores": pair_dict}
+    print(f"Saved:\n\t{len(embedding_dict)} embeddings\n\t{len(impostor_dict)} impostors scores\n\t{len(pair_dict)} pairs scores")
     torch.save(savepoint, args.output)
 
 def get_args_parser(add_help=True):
