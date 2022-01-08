@@ -27,11 +27,16 @@ def get_embeddings(model, dataloader, dataset, device):
     return embedding_dict
 
 def get_distances(embeddings, pairs):
-    dist_dict = {"euclidean":{},"cosine":{}}
+    start = time.time()
+    dist_dict = {"euclidean":{},"cosine":{},"absolute":{}}
     for i, (a, b) in enumerate(pairs):
-        print(f"Processed: {i/len(pairs)*100:.2f}%\r", end="")
+        time_passed = datetime.timedelta(seconds=int(time.time() - start))
+        time_est = None if i == 0 else (time_passed/i * len(pairs)) - time_passed
+        print(f"Processed: {i/len(pairs)*100:.2f}%, est: {time_est} [h:m:s]\r", end="")
+        
         if (not a in embeddings) or (not b in embeddings):
             continue
+        dist_dict["absolute"][(a,b)] = (embeddings[a] - embeddings[b]).abs().sum().item()
         dist_dict["euclidean"][(a,b)] = (embeddings[a] - embeddings[b]).pow(2).sum().pow(0.5).item()
         dist_dict["cosine"][(a,b)] = torch.nn.functional.cosine_similarity(embeddings[a], embeddings[b], dim=0).item()
     return dist_dict
