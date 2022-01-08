@@ -126,6 +126,10 @@ def load_data(dir, args):
 def main(args):
     print(args)
 
+    if args.resume != "":
+        print("Resuming training")
+        checkpoint = torch.load(args.resume, map_location="cpu")
+
     device = torch.device(args.device)
 
     dataset, dataset_test, train_sampler, test_sampler, data_loader, data_loader_test = load_data(args.data_path, args)
@@ -142,6 +146,13 @@ def main(args):
     optimizer = torch.optim.SGD([{'params': model.parameters()}, {'params': metric_fc.parameters()}],
                                      lr=args.lr,momentum=args.momentum, weight_decay=args.weight_decay)
     lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=args.lr_step_size, gamma=args.lr_gamma)
+
+    if args.resume != "":
+        model.load_state_dict(checkpoint["model"])
+        metric_fc.load_state_dict(checkpoint["metric_fc"])
+        optimizer.load_state_dict(checkpoint["optimizer"])
+        lr_scheduler.load_state_dict(checkpoint["lr_scheduler"])
+        args.start_epoch = checkpoint["args"].start_epoch
 
     print("Start training")
     start_time = time.time()
@@ -174,6 +185,7 @@ def get_args_parser(add_help=True):
     parser.add_argument("--data-path", default="../Datasets/train_iris_casia_v4", type=str, help="dataset path")
 
     parser.add_argument("--model", default="resnet18", type=str, help="model name")
+    parser.add_argument("--resume", default="", type=str, help="resume from selected checkpoint")
     parser.add_argument("--embedding-size", default=128, type=int, help="size of emdedding space (default: 128)")
     parser.add_argument("--device", default="cpu", type=str, help="device (Use cuda or cpu Default: cpu)")
     parser.add_argument(
