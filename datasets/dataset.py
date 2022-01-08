@@ -37,15 +37,18 @@ class IrisVerificationDataset(VisionDataset):
             self.anotations = list(csv_file)
         with open(os.path.join(root, 'mapping.csv'), newline='') as csvfile:
             csv_file = csv.reader(csvfile, delimiter=',', quotechar='"')
+            next(csv_file)
             self.mapping = list(csv_file)
         with open(os.path.join(root, 'pairs.csv'), newline='') as csvfile:
             csv_file = csv.reader(csvfile, delimiter=',', quotechar='"')
-            self.pairs = list(csv_file)
+            next(csv_file)
+            self.pairs = list(map(lambda x: (int(x[0]), int(x[1])), csv_file ))
         with open(os.path.join(root, 'impostors.csv'), newline='') as csvfile:
             csv_file = csv.reader(csvfile, delimiter=',', quotechar='"')
-            self.impostors = list(csv_file)
+            next(csv_file)
+            self.impostors = list(map(lambda x: (int(x[0]), int(x[1])), csv_file ))
         
-        self.mapping = dict(map(lambda x: (x[1],x[0]), self.mapping[1:]))
+        self.mapping = dict(map(lambda x: (int(x[1]),x[0]), self.mapping))
 
         self.header = self.anotations[0]
         self.image_id_idx = self.header.index('image_id')
@@ -59,9 +62,9 @@ class IrisVerificationDataset(VisionDataset):
         Returns:
             tuple: (image, target) where target is a tuple of all target types
         """
-        anotation_index = str(index+1)
+        anotation_index = index+1
         param_list = self.anotations_map[self.mapping[anotation_index]]
-        param_list[self.image_id_idx] = anotation_index
+        param_list[self.image_id_idx] = str(anotation_index)
         dataset_root = self.root
 
         self.tmp_img.update(self.header,param_list,dataset_root)
@@ -74,7 +77,7 @@ class IrisVerificationDataset(VisionDataset):
         if self.transform is not None:
             img = self.transform(img)
         
-        return img, int(anotation_index)
+        return img, anotation_index
     def __len__(self) -> int:
         return len(self.mapping)
 

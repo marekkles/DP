@@ -64,9 +64,6 @@ def main(args):
             embedding = model(image)
             for i in range(embedding.shape[0]):
                 embedding_dict[target[i].item()] = embedding[i].detach()
-            
-            #if bn == 20:
-            #    break
     
         print("Evaluating impostors distances")
         impostor_dict = {"euclidean":{},"cosine":{}}
@@ -75,22 +72,22 @@ def main(args):
             if (not a in embedding_dict) or (not b in embedding_dict):
                 continue
             impostor_dict["euclidean"][(a,b)] = (embedding_dict[a] - embedding_dict[b]).pow(2).sum().pow(0.5).item()
-            impostor_dict["cosine"][(a,b)] = torch.nn.functional.cosine_similarity(embedding_dict[a], embedding_dict[b]).item()
+            impostor_dict["cosine"][(a,b)] = torch.nn.functional.cosine_similarity(embedding_dict[a], embedding_dict[b], dim=0).item()
     
         print("Evaluating pairs distances")
         pair_dict = {"euclidean":{},"cosine":{}}
         for i, (a, b) in enumerate(dataset_eval.pairs):
             print(f"Processed: {i/len(dataset_eval.pairs)*100:.2f}%\r", end="")
-            if (not a in embedding_dict) or (not b in embedding_dict):
+            if (not int(a) in embedding_dict) or (not int(b) in embedding_dict):
                 continue
             pair_dict["euclidean"][(a,b)] = (embedding_dict[a] - embedding_dict[b]).pow(2).sum().pow(0.5).item()
-            pair_dict["cosine"][(a,b)] = torch.nn.functional.cosine_similarity(embedding_dict[a], embedding_dict[b]).item()
+            pair_dict["cosine"][(a,b)] = torch.nn.functional.cosine_similarity(embedding_dict[a], embedding_dict[b], dim=0).item()
 
     
     print(f"\nSaving results to {args.output}")
     savepoint = {"embeddings":embedding_dict, "impostor_scores": impostor_dict, "pair_scores": pair_dict}
-    print(f"Saved:\n\t{len(embedding_dict)} embeddings\n\t{len(impostor_dict['euclidean'])} impostors scores\n\t{len(pair_dict['euclidean'])} pairs scores")
     torch.save(savepoint, args.output)
+    print(f"Saved:\n\t{len(embedding_dict)} embeddings\n\t{len(impostor_dict['euclidean'])} impostors scores\n\t{len(pair_dict['euclidean'])} pairs scores")
 
 def get_args_parser(add_help=True):
     import argparse
