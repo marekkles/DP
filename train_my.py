@@ -190,7 +190,7 @@ def get_args_parser(add_help=True):
     #parser.add_argument("--data-path", default="../Datasets/train_iris_nd_crosssensor_2013", type=str, help="dataset path")
     parser.add_argument("--data-path", default="../Datasets/train_iris_casia_v4", type=str, help="dataset path")
 
-    parser.add_argument("--model", default="resnet18", type=str, help="model name")
+    parser.add_argument("--model", default="iresnet18", type=str, help="model name")
     parser.add_argument("--resume", default="", type=str, help="resume from selected checkpoint")
     parser.add_argument("--embedding-size", default=128, type=int, help="size of emdedding space (default: 128)")
     parser.add_argument("--device", default="cpu", type=str, help="device (Use cuda or cpu Default: cpu)")

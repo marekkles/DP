@@ -138,7 +138,7 @@ class IResNet(nn.Module):
 
         return nn.Sequential(*layers)
 
-    def forward(self, x):
+    def forward(self, x, repeat_before_dropout:int = 1):
         with torch.cuda.amp.autocast(self.fp16):
             x = self.conv1(x)
             x = self.bn1(x)
@@ -150,6 +150,7 @@ class IResNet(nn.Module):
             x = self.bn2(x)
             #x = self.avgpool(x)
             x = torch.flatten(x, 1)
+            x = x.repeat(repeat_before_dropout, 1)
             x = self.dropout(x)
         x = self.fc(x.float() if self.fp16 else x)
         x = self.features(x)

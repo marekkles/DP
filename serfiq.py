@@ -36,8 +36,8 @@ def get_score(
     SER-FIQ score : float
     """
     with torch.no_grad():
-        repeated_image = image.repeat(T,1,1,1).to(device)
-        embeddings = model(repeated_image)
+        repeated_image = image[None, :, :, :].to(device)
+        embeddings = model(repeated_image,repeat_before_dropout=T)
         norm = torch.nn.functional.normalize(embeddings,dim=1)
         eucl_dist = torch.cdist(norm, norm)
         idx = torch.triu_indices(T,T,1)

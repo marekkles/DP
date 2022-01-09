@@ -33,7 +33,7 @@ def get_distances(embeddings, pairs):
         time_passed = datetime.timedelta(seconds=int(time.time() - start))
         time_est = None if i == 0 else (time_passed/i * len(pairs)) - time_passed
         print(f"Processed: {i/len(pairs)*100:.2f}%, est: {time_est} [h:m:s]\r", end="")
-        
+
         if (not a in embeddings) or (not b in embeddings):
             continue
         dist_dict["absolute"][(a,b)] = (embeddings[a] - embeddings[b]).abs().sum().item()
@@ -97,15 +97,15 @@ def get_args_parser(add_help=True):
     parser = argparse.ArgumentParser(description="ArcFace model evaluation :get: embeddings", add_help=add_help)
 
     parser.add_argument("--data-path", default="../Datasets/iris_verification_NDCSI2013_01_05", type=str, help="dataset path")
-    parser.add_argument("--model", default="iresnet18", type=str, help="model name")
-    parser.add_argument("--model-path", default=os.path.join("..","models","iresnet18","model_47.pth"), type=str, help="path to model .pth file")
-    parser.add_argument("--embedding-size", default=128, type=int, help="size of emdedding space (default: 128)")
+    parser.add_argument("--model", default="iresnet50", type=str, help="model name")
+    parser.add_argument("--model-path", default=os.path.join("..","models","iresnet50","model_64.pth"), type=str, help="path to model .pth file")
+    parser.add_argument("--embedding-size", default=256, type=int, help="size of emdedding space (default: 128)")
     parser.add_argument("--device", default="cpu", type=str, help="device (Use cuda or cpu Default: cpu)")
     parser.add_argument(
         "-b", "--batch-size", default=128, type=int, help="images per gpu, the total batch size is $NGPU x batch_size"
     )
     parser.add_argument(
-        "-j", "--workers", default=4, type=int, metavar="N", help="number of data loading workers (default: 16)"
+        "-j", "--workers", default=4, type=int, metavar="N", help="number of data loading workers (default: 4)"
     )
     parser.add_argument(
         "-o", "--output", default="embeddings.pth", type=str, help="output emdeddings file (default: embeddings.pth)"
