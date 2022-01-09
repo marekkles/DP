@@ -81,12 +81,19 @@ def main(args):
     print("Generating scores")
     start = time.time()
     score_dict = {}
-    for bn, (image, target) in enumerate(dataset_eval):
+    for bn in range(len(dataset_eval)):
+        image, target = dataset_eval[bn]
         time_passed = datetime.timedelta(seconds=int(time.time() - start))
         time_est = None if bn == 0 else (time_passed/(bn) * len(dataset_eval)) - time_passed
         print(f"Processed: {bn/len(dataset_eval)*100:.2f}%, est: {time_est} [h:m:s]\r", end="")
         score = get_score(model, image, device)
         score_dict[target] = score
+
+        #if bn%args.save_period == 0:
+        #    print(f"\nSaving embeddings to score_{bn}.pth")
+        #    savepoint = {"scores":score_dict}
+        #    torch.save(savepoint, f"score_{bn}.pth")
+
     print(f"\nSaving embeddings to {args.output}")
     savepoint = {"scores":score_dict}
     torch.save(savepoint, args.output)
@@ -103,6 +110,9 @@ def get_args_parser(add_help=True):
     parser.add_argument("--device", default="cpu", type=str, help="device (Use cuda or cpu Default: cpu)")
     parser.add_argument(
         "-o", "--output", default="scores.pth", type=str, help="output scores file (default: scores.pth)"
+    )
+    parser.add_argument(
+        "-p", "--save-period", default=512, type=int, help="Periodical scores save (default: 500)"
     )
 
     return parser
