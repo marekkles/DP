@@ -188,7 +188,7 @@ def get_args_parser(add_help=True):
     parser = argparse.ArgumentParser(description="PyTorch Classification Training, using ArcFace", add_help=add_help)
 
     #parser.add_argument("--data-path", default="../Datasets/train_iris_nd_crosssensor_2013", type=str, help="dataset path")
-    parser.add_argument('--data-path', type=list, default=["../Datasets/train_iris_nd_crosssensor_2013"], nargs='+', help="datasets paths")
+    parser.add_argument('--data-path', default=["../Datasets/train_iris_nd_crosssensor_2013"], nargs='+', help="datasets paths")
 
 
     parser.add_argument("--model", default="iresnet18", type=str, help="model name")
