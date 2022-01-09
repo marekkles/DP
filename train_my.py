@@ -86,7 +86,7 @@ def load_data(dir, args):
     auto_augment_policy = getattr(args, "auto_augment", None)
     random_erase_prob = getattr(args, "random_erase", 0.0)
 
-    dataset_train = IrisDataset([dir], transform=presets.ClassificationPresetTrain(
+    dataset_train = IrisDataset(dir, transform=presets.ClassificationPresetTrain(
                 crop_size=train_crop_size,
                 interpolation=interpolation,
                 auto_augment_policy=auto_augment_policy,
@@ -96,7 +96,7 @@ def load_data(dir, args):
         )
     
     print("Loading data")
-    dataset_val = IrisDataset([dir], transform=presets.ClassificationPresetEval(
+    dataset_val = IrisDataset(dir, transform=presets.ClassificationPresetEval(
                 crop_size=val_crop_size, 
                 resize_size=val_resize_size, 
                 interpolation=interpolation
@@ -188,7 +188,8 @@ def get_args_parser(add_help=True):
     parser = argparse.ArgumentParser(description="PyTorch Classification Training, using ArcFace", add_help=add_help)
 
     #parser.add_argument("--data-path", default="../Datasets/train_iris_nd_crosssensor_2013", type=str, help="dataset path")
-    parser.add_argument("--data-path", default="../Datasets/train_iris_casia_v4", type=str, help="dataset path")
+    parser.add_argument('--data-path', type=list, default=["../Datasets/train_iris_nd_crosssensor_2013"], nargs='+', help="datasets paths")
+
 
     parser.add_argument("--model", default="iresnet18", type=str, help="model name")
     parser.add_argument("--resume", default="", type=str, help="resume from selected checkpoint")
