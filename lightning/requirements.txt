@@ -1,0 +1,21 @@
+#Machine learning
+torch 
+torchvision 
+torchaudio
+torchmetrics
+pytorch-lightning
+tensorboard
+
+#Plotting
+matplotlib
+plotly
+
+#Evaluation and data processing
+numpy
+pandas
+sklearn
+scipy
+
+#Utilities and logging
+easydict
+wandb

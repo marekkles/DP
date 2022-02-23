@@ -1,0 +1,32 @@
+{
+    "os": "Linux-5.13.0-27-generic-x86_64-with-glibc2.29",
+    "python": "3.8.10",
+    "heartbeatAt": "2022-01-28T22:24:46.092562",
+    "startedAt": "2022-01-28T22:24:38.591107",
+    "docker": null,
+    "cpu_count": 4,
+    "cuda": null,
+    "args": [
+        "--ip=127.0.0.1",
+        "--stdin=9013",
+        "--control=9011",
+        "--hb=9010",
+        "--Session.signature_scheme=\"hmac-sha256\"",
+        "--Session.key=b\"4275b276-54da-41c3-bcbf-44ad4db48d2f\"",
+        "--shell=9012",
+        "--transport=\"tcp\"",
+        "--iopub=9014",
+        "--f=/tmp/tmp-5507h9JTEUFel0Fa.json"
+    ],
+    "state": "running",
+    "program": "<python with no main file>",
+    "git": {
+        "remote": "git@github.com:marekkles/DP.git",
+        "commit": "0c1fdbdf778769a298dae3dd26d692a94eb53cc5"
+    },
+    "email": "xvasko16@vutbr.cz",
+    "root": "/home/marek/School/DP/DP",
+    "host": "MOTHERSHIP",
+    "username": "marek",
+    "executable": "/bin/python"
+}
