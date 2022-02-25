@@ -38,12 +38,12 @@ class RecognitionNet(pl.LightningModule):
              backbone, Available backbones are {' '.join(available_backbones)}"
         assert metric in available_metrics, f"{metric} is not valid\
              metric, Available metrics are {' '.join(available_metrics)}"
-
         self.encoder = backbones.__dict__[backbone](**backbone_args)
         self.decoder = metrics.__dict__[metric](**metric_args)
         self.loss = nn.CrossEntropyLoss()
         self.train_accuracy = torchmetrics.Accuracy()
         self.validation_accuracy = torchmetrics.Accuracy()
+        self.save_hyperparameters()
     def forward(self, x):
         embedding = self.encoder(x)
         return embedding

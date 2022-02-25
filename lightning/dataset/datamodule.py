@@ -1,5 +1,6 @@
-from .dataset import IrisVerificationDataset, IrisDataset
+from .dataset import IrisVerificationDataset, IrisDataset, DatasetSubset
 import torch
+from torch import randperm, default_generator
 from torch.utils.data import random_split, DataLoader
 from typing import Optional
 
@@ -12,39 +13,46 @@ class IrisDataModule(pl.LightningDataModule):
             predic_data_dir: str,
             auto_crop: bool = True,
             batch_size: int = 32,
-            train_transforms = None,
-            predict_transforms = None,
+            train_transform = None,
+            val_transform = None,
+            test_transform = None,
+            predict_transform = None,
+            traint_val_test_split = (0.75,0.2,0.05),
+            generator=default_generator
         ):
         super().__init__()
-        self.train_transforms = train_transforms
-        self.predict_transforms = predict_transforms
+        assert len(traint_val_test_split) == 3, "Train val test split tuple must contain 3 elements"
+        assert all(map(lambda x: type(x) == float, traint_val_test_split)), "Train val test split tuple must be tuple of floats between 0 and 1"
         self.data_dir = data_dir
         self.predict_data_dir = predic_data_dir
         self.auto_crop = auto_crop
         self.batch_size = batch_size
+        self.train_transform = train_transform
+        self.val_transform = val_transform
+        self.test_transform = test_transform
+        self.predict_transform = predict_transform
+        self.traint_val_test_split = traint_val_test_split
+        self.generator = generator
         self.iris_full = IrisDataset(
-            self.data_dir, 
-            transform=self.train_transforms, 
+            self.data_dir,
+            autocrop=self.auto_crop
+        )
+        self.iris_predict = IrisVerificationDataset(
+            self.predict_data_dir,
+            transform=self.predict_transform,
             autocrop=self.auto_crop
         )
         self.num_classes = self.iris_full.num_classes
     def setup(self, stage: Optional[str] = None):
-        self.iris_predict = IrisVerificationDataset(
-            self.predict_data_dir, 
-            transform=self.predict_transforms, 
-            autocrop=self.auto_crop
-        )
-        traint_val_test_split = [
-            int(len(self.iris_full) * 0.75), 
-            int(len(self.iris_full) * 0.2), 
-            int(len(self.iris_full) * 0.05)
-        ]
-        traint_val_test_split[-1] += len(self.iris_full) - sum(traint_val_test_split)
-        self.iris_train, self.iris_val, self.iris_test  = random_split(
-            self.iris_full, 
-            traint_val_test_split, 
-            generator=torch.Generator().manual_seed(42)
-        )
+        lengths = [int(l*len(self.iris_full)) for l in  self.traint_val_test_split]
+        lengths[-1] += len(self.iris_full) - sum(lengths)
+        perms = randperm(sum(lengths), generator=self.generator).tolist()
+        aggs = [sum(lengths[:0]), sum(lengths[:1]), sum(lengths[:2]), sum(lengths[:3])]
+        subsets = [perms[start:end] for start, end in zip(aggs[:-1], aggs[1:])]
+        
+        self.iris_train = DatasetSubset(self.iris_full, subsets[0], self.train_transform)
+        self.iris_val = DatasetSubset(self.iris_full, subsets[1], self.val_transform)
+        self.iris_test = DatasetSubset(self.iris_full, subsets[2], self.test_transform)
     def train_dataloader(self):
         return DataLoader(self.iris_train, batch_size=self.batch_size)
     def val_dataloader(self):

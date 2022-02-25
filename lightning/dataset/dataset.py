@@ -1,3 +1,6 @@
+from logging import root
+from cv2 import transform
+from sklearn import datasets
 from torchvision.datasets.vision import VisionDataset
 import torch
 from collections.abc import Callable
@@ -174,3 +177,26 @@ class IrisDataset(VisionDataset):
         return img, target
     def __len__(self) -> int:
         return len(self.picked_subjects)
+
+
+
+class DatasetSubset(VisionDataset):
+    def __init__(
+        self, 
+        dataset: VisionDataset,
+        indicies: list,
+        transform: Optional[Callable]=None,
+    ) -> None:
+        super().__init__(dataset.root, transform=transform)
+        self.dataset=dataset
+        self.transform=transform
+        self.indicies=indicies
+        self.num_classes=dataset.num_classes
+    def __getitem__(self, index: int) -> Tuple[Any, Any]:
+        idx = self.indicies[index]
+        img, target = self.dataset[idx]
+        if transform != None:
+           img = self.transform(img)
+        return img, target
+    def __len__(self) -> int:
+        return len(self.indicies)

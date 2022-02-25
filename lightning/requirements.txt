@@ -1,10 +1,10 @@
 #Machine learning
-torch 
-torchvision 
-torchaudio
+#torch 
+#torchvision 
+#torchaudio
 torchmetrics
 pytorch-lightning
-tensorboard
+#tensorboard
 
 #Plotting
 matplotlib
