@@ -1,4 +1,4 @@
-from .dataset import IrisVerificationDataset, IrisDataset, DatasetSubset
+from .dataset_classes import IrisVerificationDataset, IrisDataset, DatasetSubset
 import torch
 from torch import randperm, default_generator
 from torch.utils.data import random_split, DataLoader
@@ -13,12 +13,12 @@ class IrisDataModule(pl.LightningDataModule):
             predic_data_dir: str,
             auto_crop: bool = True,
             batch_size: int = 32,
+            num_workers: int = 4,
             train_transform = None,
             val_transform = None,
             test_transform = None,
             predict_transform = None,
-            traint_val_test_split = (0.75,0.2,0.05),
-            generator=default_generator
+            traint_val_test_split = (0.75,0.2,0.05)
         ):
         super().__init__()
         assert len(traint_val_test_split) == 3, "Train val test split tuple must contain 3 elements"
@@ -27,12 +27,12 @@ class IrisDataModule(pl.LightningDataModule):
         self.predict_data_dir = predic_data_dir
         self.auto_crop = auto_crop
         self.batch_size = batch_size
+        self.num_workers = num_workers
         self.train_transform = train_transform
         self.val_transform = val_transform
         self.test_transform = test_transform
         self.predict_transform = predict_transform
         self.traint_val_test_split = traint_val_test_split
-        self.generator = generator
         self.iris_full = IrisDataset(
             self.data_dir,
             autocrop=self.auto_crop
@@ -46,7 +46,7 @@ class IrisDataModule(pl.LightningDataModule):
     def setup(self, stage: Optional[str] = None):
         lengths = [int(l*len(self.iris_full)) for l in  self.traint_val_test_split]
         lengths[-1] += len(self.iris_full) - sum(lengths)
-        perms = randperm(sum(lengths), generator=self.generator).tolist()
+        perms = randperm(sum(lengths)).tolist()
         aggs = [sum(lengths[:0]), sum(lengths[:1]), sum(lengths[:2]), sum(lengths[:3])]
         subsets = [perms[start:end] for start, end in zip(aggs[:-1], aggs[1:])]
         
@@ -54,11 +54,27 @@ class IrisDataModule(pl.LightningDataModule):
         self.iris_val = DatasetSubset(self.iris_full, subsets[1], self.val_transform)
         self.iris_test = DatasetSubset(self.iris_full, subsets[2], self.test_transform)
     def train_dataloader(self):
-        return DataLoader(self.iris_train, batch_size=self.batch_size)
+        return DataLoader(
+            self.iris_train, 
+            batch_size=self.batch_size,
+            num_workers=self.num_workers
+        )
     def val_dataloader(self):
-        return DataLoader(self.iris_val, batch_size=self.batch_size)
+        return DataLoader(
+            self.iris_val, 
+            batch_size=self.batch_size,
+            num_workers=self.num_workers
+        )
     def test_dataloader(self):
-        return DataLoader(self.iris_test, batch_size=self.batch_size)
+        return DataLoader(
+            self.iris_test,
+            batch_size=self.batch_size,
+            num_workers=self.num_workers
+        )
     def predict_dataloader(self):
-        return DataLoader(self.iris_predict, batch_size=self.batch_size)
+        return DataLoader(
+            self.iris_predict,
+            batch_size=self.batch_size,
+            num_workers=self.num_workers
+        )
 

@@ -1,0 +1,122 @@
+{
+    "experiment_name": "iresnet50-ArcFace",
+    "project_name": "dp",
+    "backbone": "iresnet50",
+    "backbone_args": {
+        "in_channels": 1,
+        "num_classes": 512,
+        "dropout_prob0": 0.5
+    },
+    "metric": "ArcFaceDecoder",
+    "metric_args": {
+        "in_features": 512,
+        "out_features": 200
+    },
+    "datasets": [
+        "../../Datasets/train_iris_nd_crosssensor_2013",
+        "../../Datasets/train_iris_casia_v4",
+        "../../Datasets/train_iris_nd_0405",
+        "../../Datasets/train_iris_utris_v1"
+    ],
+    "predic_dataset": "../../Datasets/iris_verification_NDCSI2013_01_05",
+    "train_transform": {
+        "Resize": {
+            "size": [
+                112,
+                112
+            ]
+        },
+        "RandomInvert": {
+            "p": 0.2
+        },
+        "Normalize": {
+            "mean": [
+                0.485
+            ],
+            "std": [
+                0.229
+            ]
+        },
+        "RandomAdjustSharpness": {
+            "sharpness_factor": 3,
+            "p": 0.5
+        },
+        "RandomAutocontrast": {
+            "p": 0.5
+        },
+        "RandomAffine": {
+            "degrees": 8,
+            "translate": [
+                0.1,
+                0.1
+            ],
+            "scale": [
+                0.8,
+                1.33
+            ],
+            "shear": 10,
+            "fill": 0
+        },
+        "RandomErasing": {
+            "p": 0.5,
+            "scale": [
+                0.02,
+                0.33
+            ],
+            "ratio": [
+                0.3,
+                3.3
+            ],
+            "value": 0,
+            "inplace": false
+        }
+    },
+    "val_transform": {
+        "Resize": {
+            "size": [
+                112,
+                112
+            ]
+        },
+        "Normalize": {
+            "mean": [
+                0.485
+            ],
+            "std": [
+                0.229
+            ]
+        }
+    },
+    "test_transform": {
+        "Resize": {
+            "size": [
+                112,
+                112
+            ]
+        },
+        "Normalize": {
+            "mean": [
+                0.485
+            ],
+            "std": [
+                0.229
+            ]
+        }
+    },
+    "predict_transform": {
+        "Resize": {
+            "size": [
+                112,
+                112
+            ]
+        },
+        "Normalize": {
+            "mean": [
+                0.485
+            ],
+            "std": [
+                0.229
+            ]
+        }
+    }
+}

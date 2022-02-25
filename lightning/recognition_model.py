@@ -30,7 +30,11 @@ class RecognitionNet(pl.LightningModule):
         backbone:str,
         backbone_args:dict,
         metric:str,
-        metric_args:dict
+        metric_args:dict,
+        optim:str,
+        optim_args:dict,
+        lr_scheduler:str,
+        lr_scheduler_args:dict
     ):
 
         super().__init__()
@@ -41,6 +45,10 @@ class RecognitionNet(pl.LightningModule):
         self.encoder = backbones.__dict__[backbone](**backbone_args)
         self.decoder = metrics.__dict__[metric](**metric_args)
         self.loss = nn.CrossEntropyLoss()
+        self.optim = optim
+        self.optim_args = optim_args
+        self.lr_scheduler=lr_scheduler
+        self.lr_scheduler_args=lr_scheduler_args
         self.train_accuracy = torchmetrics.Accuracy()
         self.validation_accuracy = torchmetrics.Accuracy()
         self.save_hyperparameters()
@@ -48,8 +56,9 @@ class RecognitionNet(pl.LightningModule):
         embedding = self.encoder(x)
         return embedding
     def configure_optimizers(self):
-        optimizer = torch.optim.SGD(self.parameters(), lr=1e-3)
-        return optimizer
+        optimizer = torch.optim.__dict__[self.optim](self.parameters(), **self.optim_args)
+        lr_scheduler = torch.optim.lr_scheduler.__dict__[self.lr_scheduler](optimizer, **self.lr_scheduler_args)
+        return [optimizer], [lr_scheduler]
     def training_step(self, train_batch, batch_idx):
         x, y = train_batch
         z = self.encoder(x)

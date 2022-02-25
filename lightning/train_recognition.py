@@ -14,11 +14,30 @@ args = {
     "project_name":"dp",
 
     "backbone":"iresnet50",
-    "backbone_args":{"in_channels" : 1, "num_classes" : 512, "dropout_prob0" : 0.5}, 
+    "backbone_args":{
+        "in_channels" : 1, 
+        "num_classes" : 512, 
+        "dropout_prob0" : 0.5
+    }, 
     "metric":"ArcFaceDecoder", 
-    "metric_args":{"in_features" : 512, "out_features" : data_loader.num_classes},
-
-
+    "metric_args":{
+        "in_features" : 512, 
+        "out_features" : 3218
+    },
+    "optim":"SGD",
+    "optim_args":{
+        "lr":1e-3
+    },
+    "lr_scheduler":"StepLR",
+    "lr_scheduler_args":{
+        "step_size":30, 
+        "gamma":0.1
+    },
+    "max_epochs":30,
+    "batch_size":32,
+    "num_workers":4,
+    "accelerator":"cpu",
+    "devices":1,
     "datasets" : [
         "../Datasets/train_iris_nd_crosssensor_2013", 
         "../Datasets/train_iris_casia_v4",
@@ -27,44 +46,41 @@ args = {
     ],
     "predic_dataset" : "../Datasets/iris_verification_NDCSI2013_01_05",
     "train_transform" : {
-        "Resize" : {"size":(112,112)},
-        "RandomInvert" : {"p":0.5},
+        "Resize" : {"size":[112,112]},
+        "RandomInvert" : {"p":0.2},
         "Normalize" : {"mean":[0.485], "std":[0.229]},
-        "RandomAdjustSharpness"  : {"sharpness_factor":2,"p":0.5},
+        "RandomAdjustSharpness"  : {"sharpness_factor":3,"p":0.5},
         "RandomAutocontrast" : {"p":0.5},
         "RandomAffine": {
-            "degrees":10, 
-            "translate":(0.1, 0.1), 
-            "scale":(0.8, 1.3), 
-            "shear":20, 
+            "degrees":8, 
+            "translate":[0.1, 0.1],
+            "scale":[0.8, 1.33],
+            "shear":10,
             "fill":0
         },
         "RandomErasing":{
             "p":0.5, 
-            "scale":(0.02, 0.33), 
-            "ratio":(0.3, 3.3), 
+            "scale":[0.02, 0.33],
+            "ratio":[0.3, 3.3],
             "value":0, 
             "inplace":False
         }
     },
     "val_transform" : {
-        "Resize" : {"size":(112,112)},
+        "Resize" : {"size":[112,112]},
         "Normalize" : {"mean":[0.485], "std":[0.229]},
     },
     "test_transform" : {
-        "Resize" : {"size":(112,112)},
+        "Resize" : {"size":[112,112]},
         "Normalize" : {"mean":[0.485], "std":[0.229]},
     },
     "predict_transform" : {
-        "Resize" : {"size":(112,112)},
+        "Resize" : {"size":[112,112]},
         "Normalize" : {"mean":[0.485], "std":[0.229]},
     }
 }
 
 def main(args):
-    #datasets
-    datasets=args["datasets"]
-    predic_dataset=args["predic_dataset"]
     #transforms
     #train transforms
     train_transform = transforms.Compose([
@@ -108,29 +124,40 @@ def main(args):
     #logger = TensorBoardLogger('tensorboard')
     #callbacks
     callbacks = [
-        pl.ModelCheckpoint(
+        pl.callbacks.ModelCheckpoint(
             dirpath = "model_checkpoints",
-            every_n_train_steps=1000,
         ),
     ]
     # data
     data_loader = IrisDataModule(
-        data_dir= datasets,
-        predic_data_dir=predic_dataset,
+        data_dir= args["datasets"],
+        predic_data_dir=args["predic_dataset"],
         train_transform=train_transform,
         val_transform=val_transform,
         test_transform=test_transform,
-        predict_transform=predict_transform
+        predict_transform=predict_transform,
+        batch_size=args["batch_size"],
+        num_workers=args["num_workers"]
     )
     # model
     model = RecognitionNet(
-        backbone="iresnet50", 
-        backbone_args={"in_channels" : 1, "num_classes" : 512, "dropout_prob0" : 0.5}, 
-        metric="ArcFaceDecoder", 
-        metric_args={"in_features" : 512, "out_features" : data_loader.num_classes}
+        backbone=args["backbone"], 
+        backbone_args=args["backbone_args"], 
+        metric=args["metric"], 
+        metric_args=args["metric_args"],
+        optim=args["optim"], 
+        optim_args=args["optim_args"],
+        lr_scheduler=args["lr_scheduler"],
+        lr_scheduler_args=args["lr_scheduler_args"],
     )
     # training
-    trainer = pl.Trainer(max_epochs=5, logger=logger)
+    trainer = pl.Trainer(
+        max_epochs=args["max_epochs"],
+        accelerator=args["accelerator"],
+        devices=args["devices"], 
+        logger=logger, 
+        callbacks=callbacks
+    )
     trainer.fit(model, data_loader)
 
 

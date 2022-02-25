@@ -1,6 +1,5 @@
 from logging import root
 from cv2 import transform
-from sklearn import datasets
 from torchvision.datasets.vision import VisionDataset
 import torch
 from collections.abc import Callable
@@ -13,8 +12,6 @@ from .utils import IrisImage
 from torchvision.datasets.vision import VisionDataset
 from collections.abc import Callable
 from typing import Optional, Tuple, Any
-import os
-import csv
 
 class IrisVerificationDataset(VisionDataset):
     def __init__(
