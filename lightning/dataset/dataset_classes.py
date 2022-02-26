@@ -89,6 +89,7 @@ class IrisDataset(VisionDataset):
         root: list,
         mode: str = "classification",
         autocrop: bool = True,
+        caching: bool = True,
         transform: Optional[Callable] = None, 
         transforms: Optional[Callable] = None, 
         target_transform: Optional[Callable] = None
@@ -105,6 +106,8 @@ class IrisDataset(VisionDataset):
 
         self.mode = mode
         self.autocrop = autocrop
+        self.caching = caching
+        self.cache = {}
         self.tmp_img = IrisImage()
         self.anotations = dict()
         self.subjects_set = dict()
@@ -148,22 +151,28 @@ class IrisDataset(VisionDataset):
         Returns:
             tuple: (image, target) where target is a tuple of all target types
         """
+        if not index in self.cache:
+            subject = self.picked_subjects[index]
+            header = self.anotations[subject[1]][0]
+            param_list = self.anotations[subject[1]][subject[2]]
+            dataset_root = subject[1]
 
-        subject = self.picked_subjects[index]
-        header = self.anotations[subject[1]][0]
-        param_list = self.anotations[subject[1]][subject[2]]
-        dataset_root = subject[1]
+            self.tmp_img.update(header,param_list,dataset_root)
+            
+            if self.autocrop:
+                self.tmp_img.crop()
 
-        self.tmp_img.update(header,param_list,dataset_root)
-        
-        if self.autocrop:
-            self.tmp_img.crop()
+            pic = self.tmp_img.get()
+            img = torch.as_tensor(np.array(pic, copy=True))
+            img = img.view(pic.size[1], pic.size[0], len(pic.getbands()))
+            # put it from HWC to CHW format
+            img = img.permute((2, 0, 1))
+            #cache if otrion is enabled
+            if self.caching:
+                self.cache[index] = img
+        else:
+            img = self.cache[index]
 
-        pic = self.tmp_img.get()
-        img = torch.as_tensor(np.array(pic, copy=True))
-        img = img.view(pic.size[1], pic.size[0], len(pic.getbands()))
-        # put it from HWC to CHW format
-        img = img.permute((2, 0, 1))
 
         if self.transform is not None:
             img = self.transform(img)
