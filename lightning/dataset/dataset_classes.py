@@ -2,6 +2,7 @@ from logging import root
 from cv2 import transform
 from torchvision.datasets.vision import VisionDataset
 import torch
+import numpy as np
 from collections.abc import Callable
 from typing import Optional, Tuple, Any
 import os
@@ -69,7 +70,7 @@ class IrisVerificationDataset(VisionDataset):
         if self.autocrop:
             self.tmp_img.crop()
 
-        img = self.tmp_img.get()
+        img = torch.as_tensor(np.array(self.tmp_img.get(), copy=True))
 
         if self.transform is not None:
             img = self.transform(img)
@@ -154,7 +155,7 @@ class IrisDataset(VisionDataset):
         if self.autocrop:
             self.tmp_img.crop()
 
-        img = self.tmp_img.get()
+        img = torch.as_tensor(np.array(self.tmp_img.get(), copy=True))
 
         if self.transform is not None:
             img = self.transform(img)

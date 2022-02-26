@@ -16,7 +16,6 @@ def main(args):
     #transforms
     #train transforms
     train_transform = transforms.Compose([
-        transforms.PILToTensor(),
         transforms.ConvertImageDtype(torch.float),
         transforms.RandomAffine(**args["train_transform"]["RandomAffine"]),
         transforms.RandomAdjustSharpness(
@@ -25,29 +24,26 @@ def main(args):
         transforms.RandomAutocontrast(
             **args["train_transform"]["RandomAutocontrast"]
         ),
-        transforms.RandomErasing(**args["train_transform"]["RandomErasing"]),
         transforms.Resize(**args["train_transform"]["Resize"]),
         #transforms.RandomInvert(**args["train_transform"]["RandomInvert"]),
+        transforms.RandomErasing(**args["train_transform"]["RandomErasing"]),
         transforms.Normalize(**args["train_transform"]["Normalize"]),
     ])
     #val transforms
     val_transform=transforms.Compose([
         transforms.Resize(**args["val_transform"]["Resize"]),
-        transforms.PILToTensor(),
         transforms.ConvertImageDtype(torch.float),
         transforms.Normalize(**args["val_transform"]["Normalize"]),
     ])
     #test transforms
     test_transform=transforms.Compose([
         transforms.Resize(**args["test_transform"]["Resize"]),
-        transforms.PILToTensor(),
         transforms.ConvertImageDtype(torch.float),
         transforms.Normalize(**args["test_transform"]["Normalize"]),
     ])
     #predict transforms 
     predict_transform=transforms.Compose([
         transforms.Resize(**args["predict_transform"]["Resize"]),
-        transforms.PILToTensor(),
         transforms.ConvertImageDtype(torch.float),
         transforms.Normalize(**args["predict_transform"]["Normalize"]),
     ])
@@ -64,8 +60,7 @@ def main(args):
             dirpath = os.path.join(args["root_dir"], "model_checkpoints"),
         ),
         pl.callbacks.EarlyStopping(monitor="val_loss"),
-        pl.callbacks.DeviceStatsMonitor(),
-
+        #pl.callbacks.DeviceStatsMonitor(),
     ]
     # data
     data_loader = IrisDataModule(
