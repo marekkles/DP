@@ -1,8 +1,8 @@
 #!/bin/bash
 #PBS -N pytorch_training
-#PBS -q gpu
-#PBS -l select=1:ncpus=4:ngpus=2:mem=16gb:gpu_cap=cuda60:scratch_local=10gb
-#PBS -l walltime=3:00:00 
+#PBS -q gpu@cerit-pbs.cerit-sc.cz
+#PBS -l select=1:ncpus=16:ngpus=1:mem=48gb:gpu_cap=cuda60:scratch_local=16gb:cluster=zia
+#PBS -l walltime=6:00:00 
 #PBS -m ae
 
 # define a DATADIR variable: directory where the input files are taken from and where output will be copied to
@@ -17,7 +17,9 @@ echo "$PBS_JOBID is running on node `hostname -f` in a scratch directory $SCRATC
 # if scratch directory is not set, issue error message and exit
 test -n "$SCRATCHDIR" || { echo >&2 "Variable SCRATCHDIR is not set!"; exit 1; }
 
-/usr/bin/singularity exec /cvmfs/singularity.metacentrum.cz/NGC/PyTorch\:22.01-py3.SIF bash -c 'source venv/bin/activate; python DP/lightning/train_recognition.py'
+cd $DATADIR
+
+/usr/bin/singularity exec /cvmfs/singularity.metacentrum.cz/NGC/PyTorch\:22.01-py3.SIF bash -c 'python DP/lightning/train_recognition.py --args-path args.yaml'
 
 # clean the SCRATCH directory
 clean_scratch
