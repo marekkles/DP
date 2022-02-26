@@ -17,7 +17,7 @@ echo "$PBS_JOBID is running on node `hostname -f` in a scratch directory $SCRATC
 # if scratch directory is not set, issue error message and exit
 test -n "$SCRATCHDIR" || { echo >&2 "Variable SCRATCHDIR is not set!"; exit 1; }
 
-/usr/bin/singularity exec /cvmfs/singularity.metacentrum.cz/NGC/PyTorch\:22.01-py3.SIF bash -c 'source venv/bin/activate \n python DP/lightning/train_recognition.py'
+/usr/bin/singularity exec /cvmfs/singularity.metacentrum.cz/NGC/PyTorch\:22.01-py3.SIF bash -c 'source venv/bin/activate; python DP/lightning/train_recognition.py'
 
 # clean the SCRATCH directory
 clean_scratch

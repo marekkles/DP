@@ -1,7 +1,7 @@
 #Machine learning
-#torch 
-#torchvision 
-#torchaudio
+torch 
+torchvision 
+torchaudio
 torchmetrics
 pytorch-lightning
 Pillow
@@ -13,9 +13,9 @@ Pillow
 
 #Evaluation and data processing
 numpy
-#pandas
-#sklearn
-#scipy
+pandas
+sklearn
+scipy
 
 #Utilities and logging
 PyYAML
