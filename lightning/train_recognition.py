@@ -59,7 +59,7 @@ def main(args):
         pl.callbacks.ModelCheckpoint(
             dirpath = os.path.join(args["root_dir"], "model_checkpoints"),
         ),
-        pl.callbacks.EarlyStopping(monitor="val_loss"),
+        #pl.callbacks.EarlyStopping(monitor="val_loss"),
         #pl.callbacks.DeviceStatsMonitor(),
     ]
     # data
