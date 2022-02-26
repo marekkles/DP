@@ -64,6 +64,8 @@ def main(args):
             dirpath = os.path.join(args["root_dir"], "model_checkpoints"),
         ),
         pl.callbacks.EarlyStopping(monitor="val_loss"),
+        pl.callbacks.DeviceStatsMonitor(),
+
     ]
     # data
     data_loader = IrisDataModule(
