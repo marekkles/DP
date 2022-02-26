@@ -1,0 +1,98 @@
+accelerator: cpu
+backbone: iresnet50
+backbone_args:
+  dropout_prob0: 0.5
+  in_channels: 1
+  num_classes: 512
+batch_size: 32
+datasets:
+- ../Datasets/train_iris_nd_crosssensor_2013
+- ../Datasets/train_iris_casia_v4
+- ../Datasets/train_iris_nd_0405
+- ../Datasets/train_iris_utris_v1
+devices: 1
+lr_scheduler: StepLR
+lr_scheduler_args:
+  gamma: 0.1
+  step_size: 30
+max_epochs: 30
+metric: ArcFaceDecoder
+metric_args:
+  in_features: 512
+  out_features: 3218
+num_nodes: 1
+num_workers: 4
+optim: SGD
+optim_args:
+  lr: 0.001
+predic_dataset: ../Datasets/iris_verification_NDCSI2013_01_05
+predict_transform:
+  Normalize:
+    mean:
+    - 0.485
+    std:
+    - 0.229
+  Resize:
+    size:
+    - 112
+    - 112
+project_name: dp
+root_dir: ./iresnet50-arcface-today
+run_name: iresnet50-ArcFace
+test_transform:
+  Normalize:
+    mean:
+    - 0.485
+    std:
+    - 0.229
+  Resize:
+    size:
+    - 112
+    - 112
+train_transform:
+  Normalize:
+    mean:
+    - 0.485
+    std:
+    - 0.229
+  RandomAdjustSharpness:
+    p: 0.5
+    sharpness_factor: 3
+  RandomAffine:
+    degrees: 8
+    fill: 0
+    scale:
+    - 0.8
+    - 1.33
+    shear: 10
+    translate:
+    - 0.1
+    - 0.1
+  RandomAutocontrast:
+    p: 0.5
+  RandomErasing:
+    inplace: false
+    p: 0.5
+    ratio:
+    - 0.3
+    - 3.3
+    scale:
+    - 0.02
+    - 0.33
+    value: 0
+  RandomInvert:
+    p: 0.2
+  Resize:
+    size:
+    - 112
+    - 112
+val_transform:
+  Normalize:
+    mean:
+    - 0.485
+    std:
+    - 0.229
+  Resize:
+    size:
+    - 112
+    - 112

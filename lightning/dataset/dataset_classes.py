@@ -70,7 +70,11 @@ class IrisVerificationDataset(VisionDataset):
         if self.autocrop:
             self.tmp_img.crop()
 
-        img = torch.as_tensor(np.array(self.tmp_img.get(), copy=True))
+        pic = self.tmp_img.get()
+        img = torch.as_tensor(np.array(pic, copy=True))
+        img = img.view(pic.size[1], pic.size[0], len(pic.getbands()))
+        # put it from HWC to CHW format
+        img = img.permute((2, 0, 1))
 
         if self.transform is not None:
             img = self.transform(img)
@@ -155,7 +159,11 @@ class IrisDataset(VisionDataset):
         if self.autocrop:
             self.tmp_img.crop()
 
-        img = torch.as_tensor(np.array(self.tmp_img.get(), copy=True))
+        pic = self.tmp_img.get()
+        img = torch.as_tensor(np.array(pic, copy=True))
+        img = img.view(pic.size[1], pic.size[0], len(pic.getbands()))
+        # put it from HWC to CHW format
+        img = img.permute((2, 0, 1))
 
         if self.transform is not None:
             img = self.transform(img)
