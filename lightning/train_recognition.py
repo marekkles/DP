@@ -1,7 +1,4 @@
-
-from asyncio import protocols
-from asyncio.log import logger
-from os import access
+import os
 import pytorch_lightning as pl
 import torch
 from torchvision import transforms
@@ -9,94 +6,29 @@ from dataset import *
 from recognition_model import RecognitionNet
 from pytorch_lightning.loggers import WandbLogger, TensorBoardLogger
 
-args = {
-    "experiment_name":"iresnet50-ArcFace",
-    "project_name":"dp",
-
-    "backbone":"iresnet50",
-    "backbone_args":{
-        "in_channels" : 1, 
-        "num_classes" : 512, 
-        "dropout_prob0" : 0.5
-    }, 
-    "metric":"ArcFaceDecoder", 
-    "metric_args":{
-        "in_features" : 512, 
-        "out_features" : 3218
-    },
-    "optim":"SGD",
-    "optim_args":{
-        "lr":1e-3
-    },
-    "lr_scheduler":"StepLR",
-    "lr_scheduler_args":{
-        "step_size":30, 
-        "gamma":0.1
-    },
-    "max_epochs":30,
-    "batch_size":32,
-    "num_workers":4,
-    "accelerator":"cpu",
-    "devices":1,
-    "datasets" : [
-        "../Datasets/train_iris_nd_crosssensor_2013", 
-        "../Datasets/train_iris_casia_v4",
-        "../Datasets/train_iris_nd_0405",
-        "../Datasets/train_iris_utris_v1"
-    ],
-    "predic_dataset" : "../Datasets/iris_verification_NDCSI2013_01_05",
-    "train_transform" : {
-        "Resize" : {"size":[112,112]},
-        "RandomInvert" : {"p":0.2},
-        "Normalize" : {"mean":[0.485], "std":[0.229]},
-        "RandomAdjustSharpness"  : {"sharpness_factor":3,"p":0.5},
-        "RandomAutocontrast" : {"p":0.5},
-        "RandomAffine": {
-            "degrees":8, 
-            "translate":[0.1, 0.1],
-            "scale":[0.8, 1.33],
-            "shear":10,
-            "fill":0
-        },
-        "RandomErasing":{
-            "p":0.5, 
-            "scale":[0.02, 0.33],
-            "ratio":[0.3, 3.3],
-            "value":0, 
-            "inplace":False
-        }
-    },
-    "val_transform" : {
-        "Resize" : {"size":[112,112]},
-        "Normalize" : {"mean":[0.485], "std":[0.229]},
-    },
-    "test_transform" : {
-        "Resize" : {"size":[112,112]},
-        "Normalize" : {"mean":[0.485], "std":[0.229]},
-    },
-    "predict_transform" : {
-        "Resize" : {"size":[112,112]},
-        "Normalize" : {"mean":[0.485], "std":[0.229]},
-    }
-}
-
 def main(args):
+    #log args
+    if not os.path.exists(args["root_dir"]):
+        os.makedirs(args["root_dir"])
+    with open(os.path.join(args["root_dir"],"args.yaml"), 'w') as f:
+        import yaml
+        yaml.dump(args, f)
     #transforms
     #train transforms
     train_transform = transforms.Compose([
-        transforms.Resize(**args["train_transform"]["Resize"]),
         transforms.PILToTensor(),
         transforms.ConvertImageDtype(torch.float),
-        transforms.RandomInvert(**args["train_transform"]["RandomInvert"]),
-        transforms.Normalize(**args["train_transform"]["Normalize"]),
+        transforms.RandomAffine(**args["train_transform"]["RandomAffine"]),
         transforms.RandomAdjustSharpness(
             **args["train_transform"]["RandomAdjustSharpness"]
         ),
         transforms.RandomAutocontrast(
             **args["train_transform"]["RandomAutocontrast"]
         ),
-        transforms.RandomAffine(**args["train_transform"]["RandomAffine"]),
         transforms.RandomErasing(**args["train_transform"]["RandomErasing"]),
+        transforms.Resize(**args["train_transform"]["Resize"]),
+        #transforms.RandomInvert(**args["train_transform"]["RandomInvert"]),
+        transforms.Normalize(**args["train_transform"]["Normalize"]),
     ])
     #val transforms
     val_transform=transforms.Compose([
@@ -120,13 +52,18 @@ def main(args):
         transforms.Normalize(**args["predict_transform"]["Normalize"]),
     ])
     #logger
-    logger = WandbLogger(name='iresnet50',project='dp')
+    logger = WandbLogger(
+        name=args["run_name"],
+        save_dir=args["root_dir"],
+        project=args["project_name"]
+    )
     #logger = TensorBoardLogger('tensorboard')
     #callbacks
     callbacks = [
         pl.callbacks.ModelCheckpoint(
-            dirpath = "model_checkpoints",
+            dirpath = os.path.join(args["root_dir"], "model_checkpoints"),
         ),
+        pl.callbacks.EarlyStopping(monitor="val_loss"),
     ]
     # data
     data_loader = IrisDataModule(
@@ -154,12 +91,34 @@ def main(args):
     trainer = pl.Trainer(
         max_epochs=args["max_epochs"],
         accelerator=args["accelerator"],
-        devices=args["devices"], 
-        logger=logger, 
+        devices=args["devices"],
+        num_nodes=args["num_nodes"],
+        default_root_dir=args["root_dir"],
+        logger=logger,
         callbacks=callbacks
     )
     trainer.fit(model, data_loader)
 
+def get_args_parser(add_help=True):
+    import argparse
+    parser = argparse.ArgumentParser(
+        description="Recognition Training script", 
+        add_help=add_help
+    )
+    args_path_default=os.path.join(os.path.dirname(__file__),'args.yaml')
+    parser.add_argument(
+        '--args-path', 
+        default=args_path_default,
+        type=str,  
+        help=f"datasets paths (default: {args_path_default})"
+    )
+    return parser
+
 
 if __name__ == "__main__":
-    main(args=args)
+    args_program = get_args_parser().parse_args()
+    #print(args)
+    with open(args_program.args_path, 'r') as f:
+        import yaml
+        args_file = yaml.load(f,yaml.FullLoader)
+    main(args=args_file)

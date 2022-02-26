@@ -4,18 +4,20 @@
 #torchaudio
 torchmetrics
 pytorch-lightning
+Pillow
 #tensorboard
 
 #Plotting
-matplotlib
-plotly
+#matplotlib
+#plotly
 
 #Evaluation and data processing
 numpy
-pandas
-sklearn
-scipy
+#pandas
+#sklearn
+#scipy
 
 #Utilities and logging
+PyYAML
 easydict
 wandb
