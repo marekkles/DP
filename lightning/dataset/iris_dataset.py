@@ -196,7 +196,7 @@ class IrisDataset(VisionDataset):
         img = img.view(pic.size[1], pic.size[0], len(pic.getbands()))
         # put it from HWC to CHW format
         return img.permute((2, 0, 1))
-    #@functools.lru_cache(maxsize=249408)
+    @functools.lru_cache(maxsize=249408)
     def __get_img(self, index: int) -> torch.Tensor:
         """
         Args:
