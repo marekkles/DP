@@ -1,66 +1,73 @@
+#Root directory of stored models
+root_dir: runs
 #Weights and Biases config
-project_name: dp
-run_name: iresnet50-ArcFace
+project_name: dp-debug
+log_steps: 10
 #Paralelization options
 accelerator: cpu
 devices: 1
 num_nodes: 1
-root_dir: ./iresnet50-arcface-today
-#Datasets in use 
-datasets:
-- ../Datasets/train_iris_nd_crosssensor_2013
-- ../Datasets/train_iris_casia_v4
-- ../Datasets/train_iris_nd_0405
-- ../Datasets/train_iris_utris_v1
+#Datasets in use
+dataset_root: ../Datasets/
+dataset_subsets:
+#- train_iris_nd_crosssensor_2013
+- train_iris_casia_v4
+#- train_iris_nd_0405
+#- train_iris_utris_v1
 #Training specific options
-batch_size: 32
-max_epochs: 30
+batch_size: 64
+max_epochs: 120
 num_workers: 4
 #Backbone convolutionsal network config
-backbone: iresnet50
+backbone: resnet18
 backbone_args:
-    dropout_prob0: 0.5
+    dropout_prob0: 0
     in_channels: 1
-    num_classes: 512
+    num_classes: 1600
 #Softmax metric configuration
-metric: ArcFaceDecoder
+metric: PassthroughDecoder
 metric_args:
-    in_features: 512
-    out_features: 3218
+    in_features: 1600
+    out_features: 1600
 #Optimizer configuration 
 optim: SGD
 optim_args:
-    lr: 0.001
+    lr: 0.1
+    momentum: 0.9
+    weight_decay: 0.0001
 #Learning rate schedule config
-lr_scheduler: StepLR
+lr_scheduler: MultiStepLR
 lr_scheduler_args:
     gamma: 0.1
-    step_size: 30
+    milestones:
+    - 30
+    - 60
+    - 80
 #Transform config for training
 train_transform:
     Normalize:
         mean:
-        - 0.485
+        - 0.5
         std:
-        - 0.229
+        - 0.25
     RandomAdjustSharpness:
-        p: 0.5
+        p: 0
         sharpness_factor: 3
     RandomAffine:
-        degrees: 8
+        degrees: 0
         fill: 0
         scale:
-        - 0.8
-        - 1.33
-        shear: 10
+        - 1
+        - 1
+        shear: 0
         translate:
-        - 0.1
-        - 0.1
+        - 0
+        - 0
     RandomAutocontrast:
-        p: 0.5
+        p: 0
     RandomErasing:
         inplace: false
-        p: 0.5
+        p: 0
         ratio:
         - 0.3
         - 3.3
@@ -69,42 +76,42 @@ train_transform:
         - 0.33
         value: 0
     RandomInvert:
-        p: 0.2
+        p: 0
     Resize:
         size:
-        - 112
-        - 112
+        - 224
+        - 224
 #Transform config for testing
 test_transform:
     Normalize:
         mean:
-        - 0.485
+        - 0.5
         std:
-        - 0.229
+        - 0.25
     Resize:
         size:
-        - 112
-        - 112
+        - 224
+        - 224
 #Transform config for validation
 val_transform:
     Normalize:
         mean:
-        - 0.485
+        - 0.5
         std:
-        - 0.229
+        - 0.25
     Resize:
         size:
-        - 112
-        - 112
+        - 224
+        - 224
 #Transform config for prediction
 predic_dataset: ../Datasets/iris_verification_NDCSI2013_01_05
 predict_transform:
     Normalize:
         mean:
-        - 0.485
+        - 0.5
         std:
-        - 0.229
+        - 0.25
     Resize:
         size:
-        - 112
-        - 112
+        - 224
+        - 224

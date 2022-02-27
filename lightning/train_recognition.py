@@ -1,4 +1,7 @@
+from distutils.log import warn
+from ntpath import join
 import os
+import joblib
 import pytorch_lightning as pl
 import torch
 from torchvision import transforms
@@ -7,27 +10,21 @@ from recognition_model import RecognitionNet
 from pytorch_lightning.loggers import WandbLogger, TensorBoardLogger
 
 def main(args):
-    #log args
-    if not os.path.exists(args["root_dir"]):
-        os.makedirs(args["root_dir"])
-    with open(os.path.join(args["root_dir"],"args.yaml"), 'w') as f:
-        import yaml
-        yaml.dump(args, f)
     #transforms
     #train transforms
-    train_transform = transforms.Compose([
+    train_transform=transforms.Compose([
         transforms.ConvertImageDtype(torch.float),
         transforms.RandomAffine(**args["train_transform"]["RandomAffine"]),
+        transforms.Resize(**args["train_transform"]["Resize"]),
         transforms.RandomAdjustSharpness(
             **args["train_transform"]["RandomAdjustSharpness"]
         ),
         transforms.RandomAutocontrast(
             **args["train_transform"]["RandomAutocontrast"]
         ),
-        transforms.Resize(**args["train_transform"]["Resize"]),
-        #transforms.RandomInvert(**args["train_transform"]["RandomInvert"]),
-        transforms.RandomErasing(**args["train_transform"]["RandomErasing"]),
+        transforms.RandomInvert(**args["train_transform"]["RandomInvert"]),
         transforms.Normalize(**args["train_transform"]["Normalize"]),
+        transforms.RandomErasing(**args["train_transform"]["RandomErasing"]),
     ])
     #val transforms
     val_transform=transforms.Compose([
@@ -48,23 +45,34 @@ def main(args):
         transforms.Normalize(**args["predict_transform"]["Normalize"]),
     ])
     #logger
-    logger = WandbLogger(
-        name=args["run_name"],
-        save_dir=args["root_dir"],
-        project=args["project_name"]
+    loggers = (
+        WandbLogger(
+            name=args["run_name"],
+            save_dir=args["run_root_dir"],
+            project=args["project_name"]
+        ),
+        #TensorBoardLogger(
+        #    name=args["run_name"],
+        #    save_dir=os.path.join(args["run_root_dir"],'tensorboard')
+        #)
     )
-    #logger = TensorBoardLogger('tensorboard')
     #callbacks
     callbacks = [
         pl.callbacks.ModelCheckpoint(
-            dirpath = os.path.join(args["root_dir"], "model_checkpoints"),
+            monitor='val_loss',
+            save_last=True,
+            save_top_k=5,
+            mode='min',
+            auto_insert_metric_name=True,
+            filename='checkpoint-{epoch}-{val_loss:.2f}'
         ),
         #pl.callbacks.EarlyStopping(monitor="val_loss"),
         #pl.callbacks.DeviceStatsMonitor(),
     ]
     # data
     data_loader = IrisDataModule(
-        data_dir= args["datasets"],
+        data_dir=args["dataset_root"],
+        subsets=args["dataset_subsets"],
         predic_data_dir=args["predic_dataset"],
         train_transform=train_transform,
         val_transform=val_transform,
@@ -90,11 +98,18 @@ def main(args):
         accelerator=args["accelerator"],
         devices=args["devices"],
         num_nodes=args["num_nodes"],
-        default_root_dir=args["root_dir"],
-        logger=logger,
+        default_root_dir=args["run_root_dir"],
+        log_every_n_steps=args["log_steps"],
+        logger=loggers,
         callbacks=callbacks
     )
-    trainer.fit(model, data_loader)
+    trainer.fit(
+        model,
+        data_loader,
+        ckpt_path=(
+            args["resume_checkpoint"] if "resume_checkpoint" in args else None
+        )
+    )
 
 def get_args_parser(add_help=True):
     import argparse
@@ -102,20 +117,65 @@ def get_args_parser(add_help=True):
         description="Recognition Training script", 
         add_help=add_help
     )
-    args_path_default=os.path.join(os.path.dirname(__file__),'args.yaml')
     parser.add_argument(
-        '--args-path', 
-        default=args_path_default,
-        type=str,  
-        help=f"datasets paths (default: {args_path_default})"
+        '--args-path',
+        type=str,
+        default='args.yaml',
+        help=f"Path to argument file for training (default: args.yaml)"
+    )
+    parser.add_argument(
+        '--resume-dir',
+        type=str,
+        help=f"Path to resume directory"
+    )
+    parser.add_argument(
+        '--resume-checkpoint',
+        default='last',
+        type=str,
+        help=f"Resume checkpoint (default: last.ckpt)"
     )
     return parser
 
 
 if __name__ == "__main__":
     args_program = get_args_parser().parse_args()
-    #print(args)
-    with open(args_program.args_path, 'r') as f:
-        import yaml
-        args_file = yaml.load(f,yaml.FullLoader)
+    import yaml
+    import time
+
+    if args_program.resume_dir != None:
+        args_program.args_path = os.path.join(
+            args_program.resume_dir, 'args.yaml'
+        )
+
+        with open(args_program.args_path, 'r') as f:
+            args_file = yaml.load(f,yaml.FullLoader)
+        
+        args_file['resume_dir'] = args_program.resume_dir
+        args_file['resume_checkpoint'] = os.path.join(
+            args_file['resume_dir'], 
+            args_program.resume_checkpoint
+        )
+        if args_file["run_root_dir"] != args_file['resume_dir']:
+            warn('Resume directory is different as in argsfile')
+            args_file["run_root_dir"] = args_program.resume_dir
+    else:
+        with open(args_program.args_path, 'r') as f:
+            args_file = yaml.load(f,yaml.FullLoader)
+        
+        args_file["run_name"] = '{}-{}-{}'.format(
+            args_file['backbone'],
+            args_file['metric'],
+            time.time_ns()//1_000_000_000
+        )
+
+        args_file["run_root_dir"] = os.path.join(
+            args_file["root_dir"], args_file["run_name"]
+        )
+
+        if not os.path.exists(args_file["run_root_dir"]):
+            os.makedirs(args_file["run_root_dir"])
+
+        with open(os.path.join(args_file["run_root_dir"],"args.yaml"), 'w') as f:
+            yaml.dump(args_file, f)
+
     main(args=args_file)

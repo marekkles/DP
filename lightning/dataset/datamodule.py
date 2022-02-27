@@ -1,7 +1,6 @@
-from .dataset_classes import IrisVerificationDataset, IrisDataset, DatasetSubset
-import torch
-from torch import randperm, default_generator
-from torch.utils.data import random_split, DataLoader
+from .iris_dataset import IrisVerificationDataset, IrisDataset, DatasetSubset
+from torch import randperm
+from torch.utils.data import DataLoader
 from typing import Optional
 
 import pytorch_lightning as pl
@@ -9,7 +8,8 @@ import pytorch_lightning as pl
 class IrisDataModule(pl.LightningDataModule):
     def __init__(
             self,
-            data_dir: list,
+            data_dir: str,
+            subsets: list,
             predic_data_dir: str,
             auto_crop: bool = True,
             batch_size: int = 32,
@@ -35,6 +35,7 @@ class IrisDataModule(pl.LightningDataModule):
         self.traint_val_test_split = traint_val_test_split
         self.iris_full = IrisDataset(
             self.data_dir,
+            subsets,
             autocrop=self.auto_crop
         )
         self.iris_predict = IrisVerificationDataset(

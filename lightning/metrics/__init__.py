@@ -1,3 +1,3 @@
-from .arcfacedecoder import *
-from .lineardecoder import *
-from .passthroughdecoder import *
+from .arcfacedecoder import ArcFaceDecoder
+from .lineardecoder import LinearDecoder
+from .passthroughdecoder import PassthroughDecoder
