@@ -8,7 +8,6 @@ class PassthroughDecoder(nn.Module):
         assert in_features == out_features, "Input feature count must equal output feature count for passtrough"
         self.in_features = in_features
         self.out_features = out_features
-        nn.init.xavier_uniform_(self.weight)
     def forward(self, input, label):
         return input
 
