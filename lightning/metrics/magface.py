@@ -13,7 +13,7 @@ import torch
 import torch.nn as nn
 import os
 
-class MagFaceDecoder(nn.Module):
+class MagFaceLoss(nn.Module):
     def __init__(
         self,
         in_features,
@@ -24,7 +24,7 @@ class MagFaceDecoder(nn.Module):
         l_a,
         u_a
     ):
-        super(MagFaceDecoder, self).__init__()
+        super(MagFaceLoss, self).__init__()
         self.fc = MagLinear(in_features,
                             out_features,
                             scale=arc_scale)

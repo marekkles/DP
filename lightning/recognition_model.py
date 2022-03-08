@@ -44,7 +44,6 @@ class RecognitionNet(pl.LightningModule):
              metric, Available metrics are {' '.join(available_metrics)}"
         self.encoder = backbones.__dict__[backbone](**backbone_args)
         self.decoder = metrics.__dict__[metric](**metric_args)
-        self.loss = nn.CrossEntropyLoss()
         self.optim = optim
         self.optim_args = optim_args
         self.lr_scheduler=lr_scheduler
@@ -62,9 +61,8 @@ class RecognitionNet(pl.LightningModule):
     def training_step(self, train_batch, batch_idx):
         x, y = train_batch
         z = self.encoder(x)
-        y_prediction = self.decoder(z, y)
+        loss, y_prediction = self.decoder(z, y)
         self.train_accuracy(y_prediction, y)
-        loss = self.loss(y_prediction, y)
         self.log('train_loss', loss)
         self.log('train_acc', self.train_accuracy)
         return loss
@@ -74,16 +72,14 @@ class RecognitionNet(pl.LightningModule):
     def validation_step(self, val_batch, batch_idx):
         x, y = val_batch
         z = self.encoder(x)
-        y_prediction = self.decoder(z, y)
+        loss, y_prediction = self.decoder(z, y)
         self.validation_accuracy(y_prediction, y)
-        loss = self.loss(y_prediction, y)
         self.log('val_loss', loss)
         self.log('val_acc', self.validation_accuracy)
     def test_step(self, test_batch, batch_idx):
         x, y = test_batch
         z = self.encoder(x)
-        y_prediction = self.decoder(z)
-        loss = self.loss(y_prediction, y)
+        loss, y_prediction = self.decoder(z)
         self.log('test_loss', loss)
     def predict_step(self, batch, batch_idx):
         x, y = batch

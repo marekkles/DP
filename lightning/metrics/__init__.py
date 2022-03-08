@@ -1,3 +1,3 @@
-from .arcfacedecoder import ArcFaceDecoder
-from .lineardecoder import LinearDecoder
-from .passthroughdecoder import PassthroughDecoder
+from .arcfaceloss import ArcFaceLoss, CosFaceLoss
+from .linearloss import LinearLoss
+from .passthroughloss import PassthroughLoss
