@@ -17,21 +17,23 @@ class MagFaceLoss(nn.Module):
         self,
         in_features,
         out_features,
-        arc_scale,
-        l_margin,
-        u_margin,
-        l_a,
-        u_a
+        arc_scale = 64,
+        l_margin = 0.45,
+        u_margin = 0.8,
+        l_a = 10,
+        u_a = 110,
+        lambda_g = 20
     ):
         super(MagFaceLoss, self).__init__()
         self.fc = MagLinear(in_features,
                             out_features,
                             scale=arc_scale)
-        self.fc2 = MagLoss(l_a, u_a, l_margin, u_margin)
+        self.criterion = MagLoss(l_a, u_a, l_margin, u_margin)
         self.l_margin = l_margin
         self.u_margin = u_margin
         self.l_a = l_a
         self.u_a = u_a
+        self.lambda_g = lambda_g
 
     def _margin(self, x):
         """generate adaptive margin
@@ -41,9 +43,11 @@ class MagFaceLoss(nn.Module):
         return margin
 
     def forward(self, x, target):
+        x = self.features(x)
         logits, x_norm = self.fc(x, self._margin, self.l_a, self.u_a)
-        output = self.fc2(logits, target, x_norm)
-        return output
+        loss_id, loss_g, one_hot = self.criterion(logits, target, x_norm)
+        loss = loss_id + self.lambda_g * loss_g
+        return loss, x
 
 
 class MagLinear(torch.nn.Module):
@@ -112,4 +116,5 @@ class MagLoss(torch.nn.Module):
         one_hot = torch.zeros_like(cos_theta)
         one_hot.scatter_(1, target.view(-1, 1), 1.0)
         output = one_hot * cos_theta_m + (1.0 - one_hot) * cos_theta
-        return output, loss_g
+        loss = F.cross_entropy(output, target, reduction='mean')
+        return loss.mean(), loss_g, one_hot

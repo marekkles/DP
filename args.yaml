@@ -1,40 +1,54 @@
 #Root directory of stored models
 root_dir: runs
+
 #Weights and Biases config
 project_name: dp-debug
 log_steps: 10
+
 #Paralelization options
 accelerator: cpu
 devices: 1
 num_nodes: 1
+
 #Datasets in use
 dataset_root: ../Datasets/
+#Dataset for training
 dataset_subsets:
-#- train_iris_nd_crosssensor_2013
 - train_iris_casia_v4
+# Full set:
+#- train_iris_nd_crosssensor_2013
+#- train_iris_casia_v4
 #- train_iris_nd_0405
 #- train_iris_utris_v1
+#Dataset for predictions
+predic_dataset: ../Datasets/iris_verification_NDCSI2013_01_05
+
 #Training specific options
 batch_size: 64
 max_epochs: 120
 num_workers: 4
+
 #Backbone convolutionsal network config
 backbone: resnet18
 backbone_args:
     dropout_prob0: 0
     in_channels: 1
     num_classes: 1600
+
 #Softmax metric configuration
-metric: PassthroughDecoder
+#Options: ArcFaceLoss, CosFaceLoss, LinearLoss, PassthroughLoss, MagFaceLoss
+metric: PassthroughLoss
 metric_args:
     in_features: 1600
     out_features: 1600
+
 #Optimizer configuration 
 optim: SGD
 optim_args:
     lr: 0.1
     momentum: 0.9
     weight_decay: 0.0001
+
 #Learning rate schedule config
 lr_scheduler: MultiStepLR
 lr_scheduler_args:
@@ -43,6 +57,7 @@ lr_scheduler_args:
     - 30
     - 60
     - 80
+
 #Transform config for training
 train_transform:
     Normalize:
@@ -81,6 +96,7 @@ train_transform:
         size:
         - 224
         - 224
+
 #Transform config for testing
 test_transform:
     Normalize:
@@ -92,6 +108,7 @@ test_transform:
         size:
         - 224
         - 224
+
 #Transform config for validation
 val_transform:
     Normalize:
@@ -103,8 +120,8 @@ val_transform:
         size:
         - 224
         - 224
+
 #Transform config for prediction
-predic_dataset: ../Datasets/iris_verification_NDCSI2013_01_05
 predict_transform:
     Normalize:
         mean:
