@@ -50,11 +50,7 @@ def main(args):
             name=args["run_name"],
             save_dir=args["run_root_dir"],
             project=args["project_name"]
-        ),
-        #TensorBoardLogger(
-        #    name=args["run_name"],
-        #    save_dir=os.path.join(args["run_root_dir"],'tensorboard')
-        #)
+        )
     )
     #callbacks
     callbacks = [
