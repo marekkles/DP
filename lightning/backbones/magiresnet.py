@@ -2,7 +2,7 @@ import torch
 from torch import nn
 # from torchvision.models.utils import load_state_dict_from_url
 
-__all__ = ['iresnet18', 'iresnet34', 'iresnet50', 'iresnet100']
+__all__ = ['magiresnet18', 'magiresnet34', 'magiresnet50', 'magiresnet100']
 
 
 def conv3x3(in_planes, out_planes, stride=1, groups=1, dilation=1):
