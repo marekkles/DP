@@ -58,24 +58,28 @@ class IrisDataModule(pl.LightningDataModule):
         return DataLoader(
             self.iris_train, 
             batch_size=self.batch_size,
-            num_workers=self.num_workers
+            num_workers=self.num_workers,
+            persistent_workers=True
         )
     def val_dataloader(self):
         return DataLoader(
             self.iris_val, 
             batch_size=self.batch_size,
-            num_workers=self.num_workers
+            num_workers=self.num_workers,
+            persistent_workers=True
         )
     def test_dataloader(self):
         return DataLoader(
             self.iris_test,
             batch_size=self.batch_size,
-            num_workers=self.num_workers
+            num_workers=self.num_workers,
+            persistent_workers=True
         )
     def predict_dataloader(self):
         return DataLoader(
             self.iris_predict,
             batch_size=self.batch_size,
-            num_workers=self.num_workers
+            num_workers=self.num_workers,
+            persistent_workers=True
         )
 
