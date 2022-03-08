@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 import sys
 sys.path.append("..")
-from models import iresnet
 from collections import OrderedDict
 from termcolor import cprint
 from torch.nn import Parameter
