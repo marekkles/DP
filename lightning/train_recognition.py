@@ -96,6 +96,7 @@ def main(args):
         num_nodes=args["num_nodes"],
         default_root_dir=args["run_root_dir"],
         log_every_n_steps=args["log_steps"],
+        accumulate_grad_batches=args["grad_batches"],
         logger=loggers,
         callbacks=callbacks
     )

@@ -9,6 +9,7 @@ log_steps: 10
 accelerator: cpu
 devices: 1
 num_nodes: 1
+grad_batches: 1
 
 #Datasets in use
 dataset_root: ../Datasets/
