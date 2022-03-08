@@ -5,3 +5,4 @@ from .resgroup import *
 from .resgroupfix import *
 from .resnet import *
 from .resstage import *
+from .magiresnet import *
