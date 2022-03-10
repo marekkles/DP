@@ -25,7 +25,7 @@ class ArcFaceLoss(nn.Module):
     
 class CosFaceLoss(nn.Module):
     def __init__(self, in_features, out_features, s=30.0, m=0.50):
-        super(ArcFaceLoss, self).__init__()
+        super(CosFaceLoss, self).__init__()
         self.in_features = in_features
         self.out_features = out_features
         self.bn = nn.BatchNorm1d(in_features, eps=2e-05, momentum=0.9)
