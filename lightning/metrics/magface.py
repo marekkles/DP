@@ -46,7 +46,7 @@ class MagFaceLoss(nn.Module):
         logits, x_norm = self.fc(x, self._margin, self.l_a, self.u_a)
         loss_id, loss_g, one_hot = self.criterion(logits, target, x_norm)
         loss = loss_id + self.lambda_g * loss_g
-        return loss, x
+        return loss, x_norm
 
 
 class MagLinear(torch.nn.Module):
