@@ -91,7 +91,6 @@ class MagIResNet(nn.Module):
             512 * block.expansion, eps=2e-05, momentum=0.9)
         self.dropout = nn.Dropout2d(p=0.4, inplace=True)
         self.fc = nn.Linear(512 * block.expansion * self.fc_scale, num_classes)
-        self.features = nn.BatchNorm1d(num_classes, eps=2e-05, momentum=0.9)
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
@@ -143,7 +142,6 @@ class MagIResNet(nn.Module):
         x = self.dropout(x)
         x = x.view(x.size(0), -1)
         x = self.fc(x)
-        x = self.features(x)
 
         return x
 

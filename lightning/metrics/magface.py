@@ -59,6 +59,9 @@ class MagLinear(torch.nn.Module):
         super(MagLinear, self).__init__()
         self.in_features = in_features
         self.out_features = out_features
+        self.bn = nn.BatchNorm1d(in_features, eps=2e-05, momentum=0.9)
+        nn.init.constant_(self.bn.weight, 1)
+        nn.init.constant_(self.bn.bias, 0)
         self.weight = Parameter(torch.Tensor(in_features, out_features))
         self.weight.data.uniform_(-1, 1).renorm_(2, 1, 1e-5).mul_(1e5)
         self.scale = scale
@@ -68,13 +71,14 @@ class MagLinear(torch.nn.Module):
         """
         Here m is a function which generate adaptive margin
         """
-        x_norm = torch.norm(x, dim=1, keepdim=True).clamp(l_a, u_a)
+        x_bn = self.bn(x)
+        x_norm = torch.norm(x_bn, dim=1, keepdim=True).clamp(l_a, u_a)
         ada_margin = m(x_norm)
         cos_m, sin_m = torch.cos(ada_margin), torch.sin(ada_margin)
 
         # norm the weight
         weight_norm = F.normalize(self.weight, dim=0)
-        cos_theta = torch.mm(F.normalize(x), weight_norm)
+        cos_theta = torch.mm(F.normalize(x_bn), weight_norm)
         cos_theta = cos_theta.clamp(-1, 1)
         sin_theta = torch.sqrt(1.0 - torch.pow(cos_theta, 2))
         cos_theta_m = cos_theta * cos_m - sin_theta * sin_m
