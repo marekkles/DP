@@ -44,9 +44,9 @@ class MagFaceLoss(nn.Module):
 
     def forward(self, x, target):
         logits, x_norm = self.fc(x, self._margin, self.l_a, self.u_a)
-        loss_id, loss_g, one_hot = self.criterion(logits, target, x_norm)
+        loss_id, loss_g, one_hot, output = self.criterion(logits, target, x_norm)
         loss = loss_id + self.lambda_g * loss_g
-        return loss, x_norm
+        return loss, output
 
 
 class MagLinear(torch.nn.Module):
@@ -120,4 +120,4 @@ class MagLoss(torch.nn.Module):
         one_hot.scatter_(1, target.view(-1, 1), 1.0)
         output = one_hot * cos_theta_m + (1.0 - one_hot) * cos_theta
         loss = F.cross_entropy(output, target, reduction='mean')
-        return loss.mean(), loss_g, one_hot
+        return loss.mean(), loss_g, one_hot, output
