@@ -43,7 +43,6 @@ class MagFaceLoss(nn.Module):
         return margin
 
     def forward(self, x, target):
-        x = self.features(x)
         logits, x_norm = self.fc(x, self._margin, self.l_a, self.u_a)
         loss_id, loss_g, one_hot = self.criterion(logits, target, x_norm)
         loss = loss_id + self.lambda_g * loss_g
