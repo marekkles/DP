@@ -55,7 +55,7 @@ def main(args):
     #callbacks
     callbacks = [
         pl.callbacks.model_checkpoint.ModelCheckpoint(
-            dirpath=os.join(args["run_root_dir"], "checkpoints"),
+            dirpath=os.path.join(args["run_root_dir"], "checkpoints"),
             monitor='val_loss',
             save_last=True,
             save_top_k=5,
