@@ -54,7 +54,8 @@ def main(args):
     )
     #callbacks
     callbacks = [
-        pl.callbacks.ModelCheckpoint(
+        pl.callbacks.model_checkpoint.ModelCheckpoint(
+            dirpath=os.join(args["run_root_dir"], "checkpoints"),
             monitor='val_loss',
             save_last=True,
             save_top_k=5,
@@ -149,7 +150,7 @@ if __name__ == "__main__":
         
         args_file['resume_dir'] = args_program.resume_dir
         args_file['resume_checkpoint'] = os.path.join(
-            args_file['resume_dir'], 
+            args_file['resume_dir'], "checkpoints",
             args_program.resume_checkpoint
         )
         if args_file["run_root_dir"] != args_file['resume_dir']:
