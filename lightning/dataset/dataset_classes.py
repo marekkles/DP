@@ -144,7 +144,7 @@ class IrisDataset(VisionDataset):
         
         self.picked_subjects = self.subjects
         self.num_classes = len(self.subjects_set)
-    @functools.lru_cache(maxsize=170280)
+    #@functools.lru_cache(maxsize=170280)
     def _get_subject_img(self, index: int) -> Tuple[dict, torch.Tensor]:
         subject = self.picked_subjects[index]
         header = self.anotations[subject[1]][0]
