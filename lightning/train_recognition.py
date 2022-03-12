@@ -128,7 +128,7 @@ def get_args_parser(add_help=True):
     )
     parser.add_argument(
         '--resume-checkpoint',
-        default='last',
+        default='last.ckpt',
         type=str,
         help=f"Resume checkpoint (default: last.ckpt)"
     )
