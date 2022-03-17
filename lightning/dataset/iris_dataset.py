@@ -50,9 +50,7 @@ class IrisVerificationDataset(VisionDataset):
         ) as csvfile:
             csv_file = csv.reader(csvfile, delimiter=',', quotechar='"')
             next(csv_file)
-            self.pairs = list(
-                map(lambda x: (int(x[0]), int(x[1])), csv_file)
-            )
+            self.pairs = [(int(x[0]), int(x[1])) for x in csv_file]
 
     def __load_impostors_csv(self):
         with open(
@@ -60,9 +58,7 @@ class IrisVerificationDataset(VisionDataset):
         ) as csvfile:
             csv_file = csv.reader(csvfile, delimiter=',', quotechar='"')
             next(csv_file)
-            self.impostors = list(
-                map(lambda x: (int(x[0]), int(x[1])), csv_file)
-            )
+            self.impostors = [(int(x[0]), int(x[1])) for x in csv_file]
 
     @staticmethod
     def __to_tensor(pic):
