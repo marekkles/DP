@@ -1,12 +1,12 @@
 from copyreg import pickle
 from distutils.log import warn
-from ntpath import join
 import os
-import joblib
+import pickle
 import pytorch_lightning as pl
 import torch
 from torchvision import transforms
 from dataset import *
+from evaluation import pairs_impostor_scores
 from recognition_model import RecognitionNet
 from pytorch_lightning.loggers import WandbLogger, TensorBoardLogger
 
@@ -119,18 +119,26 @@ def main(args, mode: str):
             ),
             return_predictions=True
         )
-        res = {}
+        vectors = {}
         for vec,val in data:
-            res.update(zip(
+            vectors.update(zip(
                 val.cpu().detach().numpy().tolist(), 
                 [l.cpu().detach().numpy() for l in vec]
             ))
-        import pickle
+        scores = pairs_impostor_scores(
+            data_loader.iris_predict.pairs,
+            data_loader.iris_predict.impostors, vectors
+        )
+        with open(os.path.join(
+            args["resume_dir"],
+            'vectors-{}.pickle'.format(args["run_name"])
+        ), "wb") as f:
+            pickle.dump(vectors, f)
         with open(os.path.join(
             args["resume_dir"],  
-            'prediction-{}.pickle'.format(args["run_name"])
+            'scores-{}.pickle'.format(args["run_name"])
         ), "wb") as f:
-            pickle.dump(res, f)
+            pickle.dump(scores, f)
     else:
         assert False, "Not implemented!"
 
