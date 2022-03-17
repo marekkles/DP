@@ -1,3 +1,4 @@
+from copyreg import pickle
 from distutils.log import warn
 from ntpath import join
 import os
@@ -9,7 +10,7 @@ from dataset import *
 from recognition_model import RecognitionNet
 from pytorch_lightning.loggers import WandbLogger, TensorBoardLogger
 
-def main(args):
+def main(args, mode: str):
     #transforms
     #train transforms
     train_transform=transforms.Compose([
@@ -101,13 +102,28 @@ def main(args):
         logger=loggers,
         callbacks=callbacks
     )
-    trainer.fit(
-        model,
-        data_loader,
-        ckpt_path=(
-            args["resume_checkpoint"] if "resume_checkpoint" in args else None
+    if mode == "train":
+        trainer.fit(
+            model,
+            data_loader,
+            ckpt_path=(
+                args["resume_checkpoint"] if "resume_checkpoint" in args else None
+            )
         )
-    )
+    elif mode == "evaluate":
+        data = trainer.predict(
+            model,
+            data_loader,
+            ckpt_path=(
+                args["resume_checkpoint"] if "resume_checkpoint" in args else None
+            ),
+            return_predictions=True
+        )
+        import pickle
+        with open(os.path.join(args["resume_dir"], "prediction.pickle"), "wb") as f:
+            pickle.dump(data, f)
+    else:
+        assert False, "Not implemented!"
 
 def get_args_parser(add_help=True):
     import argparse
@@ -120,6 +136,13 @@ def get_args_parser(add_help=True):
         type=str,
         default='args.yaml',
         help=f"Path to argument file for training (default: args.yaml)"
+    )
+    parser.add_argument(
+        '--mode',
+        choices=["train", "evaluate"],
+        type=str,
+        default="train",
+        help=f"Mode to train or evaluate (default: train)"
     )
     parser.add_argument(
         '--resume-dir',
@@ -176,4 +199,4 @@ if __name__ == "__main__":
         with open(os.path.join(args_file["run_root_dir"],"args.yaml"), 'w') as f:
             yaml.dump(args_file, f)
 
-    main(args=args_file)
+    main(args=args_file, mode=args_program.mode)
