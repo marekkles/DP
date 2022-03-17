@@ -120,7 +120,10 @@ def main(args, mode: str):
             return_predictions=True
         )
         import pickle
-        with open(os.path.join(args["resume_dir"], "prediction.pickle"), "wb") as f:
+        with open(os.path.join(
+            args["resume_dir"],  
+            'prediction-{}.pickle'.format(args["run_name"])
+        ), "wb") as f:
             pickle.dump(data, f)
     else:
         assert False, "Not implemented!"
