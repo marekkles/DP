@@ -119,12 +119,18 @@ def main(args, mode: str):
             ),
             return_predictions=True
         )
+        res = {}
+        for vec,val in data:
+            res.update(zip(
+                val.cpu().detach().numpy().tolist(), 
+                [l.cpu().detach().numpy() for l in vec]
+            ))
         import pickle
         with open(os.path.join(
             args["resume_dir"],  
             'prediction-{}.pickle'.format(args["run_name"])
         ), "wb") as f:
-            pickle.dump(data, f)
+            pickle.dump(res, f)
     else:
         assert False, "Not implemented!"
 
