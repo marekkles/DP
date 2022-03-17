@@ -10,7 +10,7 @@ from evaluation import pairs_impostor_scores
 from recognition_model import RecognitionNet
 from pytorch_lightning.loggers import WandbLogger, TensorBoardLogger
 
-def main(args, mode: str):
+def main(args, mode):
     #transforms
     #train transforms
     train_transform=transforms.Compose([
