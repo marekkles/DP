@@ -3,6 +3,7 @@ import csv
 import functools
 from collections.abc import Callable
 from typing import Optional, Tuple, Any
+import io
 
 import numpy as np
 import torch
@@ -86,7 +87,7 @@ class IrisVerificationDataset(VisionDataset):
             image: Loaded PIL image
         """
         annotation, img_binary = self.__get_img_binary(index)
-        pic = Image.open(img_binary).convert('L')
+        pic = Image.open(io.BytesIO(img_binary)).convert('L')
         if self.autocrop:
             pic = pic.crop((
                 float(annotation[self.header['pos_x']]) -
@@ -215,7 +216,7 @@ class IrisDataset(VisionDataset):
             image: Loaded PIL image
         """
         entry, img_binary = self.__get_img_binary(index)
-        pic = Image.open(img_binary).convert('L')
+        pic = Image.open(io.BytesIO(img_binary)).convert('L')
         if self.autocrop:
             pic = pic.crop((
                 float(entry['pos_x'])-float(entry['radius_1']),
