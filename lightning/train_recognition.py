@@ -150,7 +150,7 @@ def get_args_parser(add_help=True):
         '--mode',
         choices=["train", "evaluate", "train+evaluate"],
         type=str,
-        default="train",
+        default="train+evaluate",
         help=f"Mode to train or evaluate (default: train)"
     )
     parser.add_argument(
