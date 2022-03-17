@@ -198,7 +198,15 @@ class IrisDataset(VisionDataset):
         img = img.view(pic.size[1], pic.size[0], len(pic.getbands()))
         # put it from HWC to CHW format
         return img.permute((2, 0, 1))
-    #@functools.lru_cache(maxsize=None)
+    @functools.lru_cache(maxsize=None)
+    def __get_img_binary(self, index: int): 
+        entry = self.entry_list[index]
+        img_path = os.path.join(
+            self.root, entry['__subset'],
+            entry['image_id'],'iris_right.UNKNOWN'
+        )
+        with open(img_path) as i:
+            return entry, i.read()
     def __get_img(self, index: int) -> torch.Tensor:
         """
         Args:
@@ -206,12 +214,8 @@ class IrisDataset(VisionDataset):
         Returns:
             image: Loaded PIL image
         """
-        entry = self.entry_list[index]
-        img_path = os.path.join(
-            self.root, entry['__subset'],
-            entry['image_id'],'iris_right.UNKNOWN'
-        )
-        pic = Image.open(img_path).convert('L')
+        entry, img_binary = self.__get_img_binary(index)
+        pic = Image.open(img_binary).convert('L')
         if self.autocrop:
             pic = pic.crop((
                 float(entry['pos_x'])-float(entry['radius_1']),
