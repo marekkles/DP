@@ -102,7 +102,7 @@ def main(args, mode: str):
         logger=loggers,
         callbacks=callbacks
     )
-    if mode == "train":
+    if mode == "train" or mode == "train+evaluate":
         trainer.fit(
             model,
             data_loader,
@@ -110,7 +110,7 @@ def main(args, mode: str):
                 args["resume_checkpoint"] if "resume_checkpoint" in args else None
             )
         )
-    elif mode == "evaluate":
+    if mode == "evaluate" or mode == "train+evaluate":
         data = trainer.predict(
             model,
             data_loader,
@@ -148,7 +148,7 @@ def get_args_parser(add_help=True):
     )
     parser.add_argument(
         '--mode',
-        choices=["train", "evaluate"],
+        choices=["train", "evaluate", "train+evaluate"],
         type=str,
         default="train",
         help=f"Mode to train or evaluate (default: train)"
