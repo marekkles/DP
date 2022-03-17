@@ -66,7 +66,18 @@ class IrisVerificationDataset(VisionDataset):
         img = img.view(pic.size[1], pic.size[0], len(pic.getbands()))
         # put it from HWC to CHW format
         return img.permute((2, 0, 1))
-    
+    @functools.lru_cache(maxsize=None)
+    def __get_img_binary(self, index: int): 
+        annotation = self.anotations[index]
+        img_path = os.path.join(
+            self.root,
+            self.mapping[annotation[self.header['image_id']]],
+            'iris_right.UNKNOWN'
+        )
+        with open(img_path) as i:
+            return annotation, i.read()
+    def __unwrap(self, img: torch.Tensor):
+        pass
     def __get_img(self, index: int) -> Tuple[torch.Tensor, int]:
         """
         Args:
@@ -74,13 +85,8 @@ class IrisVerificationDataset(VisionDataset):
         Returns:
             image: Loaded PIL image
         """
-        annotation = self.anotations[index]
-        img_path = os.path.join(
-            self.root,
-            self.mapping[annotation[self.header['image_id']]],
-            'iris_right.UNKNOWN'
-        )
-        pic = Image.open(img_path).convert('L')
+        annotation, img_binary = self.__get_img_binary(index)
+        pic = Image.open(img_binary).convert('L')
         if self.autocrop:
             pic = pic.crop((
                 float(annotation[self.header['pos_x']]) -
