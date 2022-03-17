@@ -74,7 +74,7 @@ class IrisVerificationDataset(VisionDataset):
             self.mapping[annotation[self.header['image_id']]],
             'iris_right.UNKNOWN'
         )
-        with open(img_path) as i:
+        with open(img_path, "rb") as i:
             return annotation, i.read()
     def __unwrap(self, img: torch.Tensor):
         pass
@@ -205,7 +205,7 @@ class IrisDataset(VisionDataset):
             self.root, entry['__subset'],
             entry['image_id'],'iris_right.UNKNOWN'
         )
-        with open(img_path) as i:
+        with open(img_path, "rb") as i:
             return entry, i.read()
     def __get_img(self, index: int) -> torch.Tensor:
         """
