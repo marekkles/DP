@@ -4,6 +4,7 @@ import functools
 from collections.abc import Callable
 from typing import Optional, Tuple, Any
 import io
+import math
 
 import numpy as np
 import torch
@@ -15,10 +16,12 @@ class IrisVerificationDataset(VisionDataset):
         self, 
         root: str,
         autocrop: bool = True,
+        unwrap: bool = False,
         transform: Optional[Callable] = None
     ) -> None:
         super().__init__(root, transform=transform)
         self.autocrop = autocrop
+        self.unwrap = unwrap
         self.__load_subset()
 
     def __load_subset(self):
@@ -77,8 +80,15 @@ class IrisVerificationDataset(VisionDataset):
         )
         with open(img_path, "rb") as i:
             return annotation, i.read()
-    def __unwrap(self, img: torch.Tensor):
-        pass
+    @staticmethod
+    def __unwrap(img: torch.Tensor, radius_1: float):
+        iris_radius = radius_1
+        nsamples = int(radius_1*math.pi)
+        theta = torch.linspace(0, 2 * math.pi, nsamples)[:-1][None,:]
+        radius = torch.linspace(0, iris_radius, int(iris_radius))[:-1][None,:]
+        x = (radius.T @ torch.sin(theta)[None,:] + iris_radius).flatten().long()
+        y = (radius.T @ torch.cos(theta)[None,:] + iris_radius).flatten().long()
+        return img[0][x,y].reshape((radius.shape[1], theta.shape[1]))[None,:]
     def __get_img(self, index: int) -> Tuple[torch.Tensor, int]:
         """
         Args:
@@ -100,6 +110,9 @@ class IrisVerificationDataset(VisionDataset):
                 float(annotation[self.header['radius_1']]),
             ))
         img = self.__to_tensor(pic)
+        if self.unwrap:
+            assert self.autocrop, "Needs autocrop to unwrap"
+            img = self.__unwrap(img, float(annotation[self.header['radius_1']]))
         id = int(self.mapping[annotation[self.header['image_id']]])
         return img, id
     def __getitem__(self, index: int) -> torch.Tensor:
@@ -130,6 +143,7 @@ class IrisDataset(VisionDataset):
         root: str,
         subsets: list,
         autocrop: bool = True,
+        unwrap: bool = False,
         transform: Optional[Callable] = None, 
         transforms: Optional[Callable] = None, 
         target_transform: Optional[Callable] = None
@@ -147,6 +161,7 @@ class IrisDataset(VisionDataset):
         
         self.subsets = subsets
         self.autocrop = autocrop
+        self.unwrap = unwrap
 
         self.__load_subsets_anotations()
         
@@ -199,6 +214,15 @@ class IrisDataset(VisionDataset):
         img = img.view(pic.size[1], pic.size[0], len(pic.getbands()))
         # put it from HWC to CHW format
         return img.permute((2, 0, 1))
+    @staticmethod
+    def __unwrap(img: torch.Tensor, radius_1: float):
+        iris_radius = radius_1
+        nsamples = int(radius_1*math.pi)
+        theta = torch.linspace(0, 2 * math.pi, nsamples)[:-1][None,:]
+        radius = torch.linspace(0, iris_radius, int(iris_radius))[:-1][None,:]
+        x = (radius.T @ torch.sin(theta)[None,:] + iris_radius).flatten().long()
+        y = (radius.T @ torch.cos(theta)[None,:] + iris_radius).flatten().long()
+        return img[0][x,y].reshape((radius.shape[1], theta.shape[1]))[None,:]
     @functools.lru_cache(maxsize=None)
     def __get_img_binary(self, index: int): 
         entry = self.entry_list[index]
@@ -224,7 +248,11 @@ class IrisDataset(VisionDataset):
                 float(entry['pos_x'])+float(entry['radius_1']),
                 float(entry['pos_y'])+float(entry['radius_1']),
             ))
-        return self.__to_tensor(pic)
+        img=self.__to_tensor(pic)
+        if self.unwrap:
+            assert self.autocrop, "Needs autocrop for unwrapping"
+            img = self.__unwrap(img, float(entry['radius_1']))
+        return img
     def __getitem__(self, index: int) -> Tuple[Any, Any]:
         """
         Args:
