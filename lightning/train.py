@@ -8,8 +8,24 @@ from torchvision import transforms
 from dataset import *
 from evaluation import pairs_impostor_scores
 import models
-from pytorch_lightning.loggers import WandbLogger, TensorBoardLogger
+from pytorch_lightning.loggers import WandbLogger, TensorBoardLogger, CSVLogger
 
+def name_gen(timestamp: int):
+    available_chars=[
+        'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 
+        'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 
+        'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 
+        'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '1', '2', '3', '4', 
+        '5', '6', '7', '8', '9', '0'
+    ]
+    ts = timestamp
+    name = []
+    while ts != 0:
+        idx = ts % len(available_chars)
+        ts = ts // len(available_chars)
+        name.append(available_chars[idx])
+    return ''.join(name)
+        
 def main(args, mode):
     
     #transforms
@@ -47,20 +63,22 @@ def main(args, mode):
         transforms.Normalize(**args["predict_transform"]["Normalize"]),
     ])
     #logger
-    loggers = (
+    loggers = [
+        CSVLogger(save_dir=args["run_root_dir"], 
+                  name=None, version='csvs'),
         WandbLogger(
             name=args["run_name"],
             save_dir=args["run_root_dir"],
             project=args["project_name"]
         )
-    )
+    ]
     #callbacks
     callbacks = [
         pl.callbacks.model_checkpoint.ModelCheckpoint(
             dirpath=os.path.join(args["run_root_dir"], "checkpoints"),
             monitor='val_loss',
             save_last=True,
-            save_top_k=5,
+            save_top_k=1,
             mode='min',
             auto_insert_metric_name=True,
             filename='checkpoint-{epoch}-{val_loss:.2f}'
@@ -78,7 +96,9 @@ def main(args, mode):
         test_transform=test_transform,
         predict_transform=predict_transform,
         batch_size=args["batch_size"],
-        num_workers=args["num_workers"]
+        num_workers=args["num_workers"],
+        auto_crop=args["auto_crop"],
+        unwrap=args["unwrap"],
     )
     # model
     model = models.__dict__[args["model"]](**args["model_args"])
@@ -197,7 +217,7 @@ if __name__ == "__main__":
             args_file['model'],
             args_file['model_args']['backbone'],
             args_file['model_args']['metric'],
-            time.time_ns()//1_000_000_000
+            name_gen(time.time_ns()//1_000_000_000)
         )
 
         args_file["run_root_dir"] = os.path.join(

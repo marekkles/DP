@@ -2,6 +2,7 @@
 root_dir: runs
 
 #Weights and Biases config
+use_wandb: True
 project_name: dp-debug
 log_steps: 10
 
@@ -25,9 +26,12 @@ dataset_subsets:
 predic_dataset: ../Datasets/iris_verification_NDCSI2013_01_05
 
 #Training specific options
-batch_size: 256
+batch_size: 16
 max_epochs: 120
 num_workers: 4
+
+auto_crop: True
+unwrap: False
 
 #Configure model for training
 model: CrFiqaNet

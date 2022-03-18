@@ -12,6 +12,7 @@ class IrisDataModule(pl.LightningDataModule):
             subsets: list,
             predic_data_dir: str,
             auto_crop: bool = True,
+            unwrap: bool = False,
             batch_size: int = 32,
             num_workers: int = 4,
             train_transform = None,
@@ -26,6 +27,7 @@ class IrisDataModule(pl.LightningDataModule):
         self.data_dir = data_dir
         self.predict_data_dir = predic_data_dir
         self.auto_crop = auto_crop
+        self.unwrap =unwrap
         self.batch_size = batch_size
         self.num_workers = num_workers
         self.train_transform = train_transform
@@ -36,14 +38,18 @@ class IrisDataModule(pl.LightningDataModule):
         self.iris_full = IrisDataset(
             self.data_dir,
             subsets,
-            autocrop=self.auto_crop
+            autocrop=self.auto_crop,
+            unwrap=self.unwrap
         )
         self.iris_predict = IrisVerificationDataset(
             self.predict_data_dir,
             transform=self.predict_transform,
-            autocrop=self.auto_crop
+            autocrop=self.auto_crop,
+            unwrap=self.unwrap
         )
-        self.num_classes = self.iris_full.num_classes
+    @property
+    def num_classes(self):
+        return self.iris_full.num_classes
     def setup(self, stage: Optional[str] = None):
         lengths = [int(l*len(self.iris_full)) for l in  self.traint_val_test_split]
         lengths[-1] += len(self.iris_full) - sum(lengths)
