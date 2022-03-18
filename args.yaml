@@ -9,7 +9,7 @@ log_steps: 10
 accelerator: cpu
 devices: 1
 num_nodes: 1
-grad_batches: 1
+grad_batches: 4
 
 #Datasets in use
 dataset_root: ../Datasets/
@@ -25,39 +25,42 @@ dataset_subsets:
 predic_dataset: ../Datasets/iris_verification_NDCSI2013_01_05
 
 #Training specific options
-batch_size: 64
+batch_size: 256
 max_epochs: 120
 num_workers: 4
 
-#Backbone convolutionsal network config
-backbone: resnet18
-backbone_args:
-    dropout_prob0: 0
-    in_channels: 1
-    num_classes: 1600
+#Configure model for training
+model: CrFiqaNet
+model_args:
+    #Backbone convolutionsal network config
+    backbone: resnet18
+    backbone_args:
+        dropout_prob0: 0
+        in_channels: 1
+        num_classes: 512
 
-#Softmax metric configuration
-#Options: ArcFaceLoss, CosFaceLoss, LinearLoss, PassthroughLoss, MagFaceLoss
-metric: PassthroughLoss
-metric_args:
-    in_features: 1600
-    out_features: 1600
+    #Softmax metric configuration
+    #Options: ArcFaceLoss, CosFaceLoss, LinearLoss, PassthroughLoss, MagFaceLoss, CrFiqaLoss
+    metric: CrFiqaLoss
+    metric_args:
+        in_features: 512
+        out_features: 1600
 
-#Optimizer configuration 
-optim: SGD
-optim_args:
-    lr: 0.1
-    momentum: 0.9
-    weight_decay: 0.0001
+    #Optimizer configuration 
+    optim: SGD
+    optim_args:
+        lr: 0.1
+        momentum: 0.9
+        weight_decay: 0.0001
 
-#Learning rate schedule config
-lr_scheduler: MultiStepLR
-lr_scheduler_args:
-    gamma: 0.1
-    milestones:
-    - 30
-    - 60
-    - 80
+    #Learning rate schedule config
+    lr_scheduler: MultiStepLR
+    lr_scheduler_args:
+        gamma: 0.1
+        milestones:
+        - 30
+        - 60
+        - 80
 
 #Transform config for training
 train_transform:

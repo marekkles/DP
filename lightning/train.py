@@ -7,10 +7,11 @@ import torch
 from torchvision import transforms
 from dataset import *
 from evaluation import pairs_impostor_scores
-from recognition_model import RecognitionNet
+import models
 from pytorch_lightning.loggers import WandbLogger, TensorBoardLogger
 
 def main(args, mode):
+    
     #transforms
     #train transforms
     train_transform=transforms.Compose([
@@ -80,16 +81,7 @@ def main(args, mode):
         num_workers=args["num_workers"]
     )
     # model
-    model = RecognitionNet(
-        backbone=args["backbone"], 
-        backbone_args=args["backbone_args"], 
-        metric=args["metric"], 
-        metric_args=args["metric_args"],
-        optim=args["optim"], 
-        optim_args=args["optim_args"],
-        lr_scheduler=args["lr_scheduler"],
-        lr_scheduler_args=args["lr_scheduler_args"],
-    )
+    model = models.__dict__[args["model"]](**args["model_args"])
     # training
     trainer = pl.Trainer(
         max_epochs=args["max_epochs"],
@@ -100,7 +92,8 @@ def main(args, mode):
         log_every_n_steps=args["log_steps"],
         accumulate_grad_batches=args["grad_batches"],
         logger=loggers,
-        callbacks=callbacks
+        callbacks=callbacks,
+        gradient_clip_val=5, gradient_clip_algorithm="norm"
     )
     if mode == "train" or mode == "train+evaluate":
         trainer.fit(
@@ -200,9 +193,10 @@ if __name__ == "__main__":
         with open(args_program.args_path, 'r') as f:
             args_file = yaml.load(f,yaml.FullLoader)
         
-        args_file["run_name"] = '{}-{}-{}'.format(
-            args_file['backbone'],
-            args_file['metric'],
+        args_file["run_name"] = '{}-{}-{}-{}'.format(
+            args_file['model'],
+            args_file['model_args']['backbone'],
+            args_file['model_args']['metric'],
             time.time_ns()//1_000_000_000
         )
 

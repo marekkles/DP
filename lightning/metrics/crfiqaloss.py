@@ -1,6 +1,20 @@
 import torch
 import torch.nn as nn
 
+class CrFiqaLoss(nn.Module):
+    def __init__(self,
+                 in_features, out_features, s=64.0, m=0.50, alpha=10.0):
+        super(CrFiqaLoss, self).__init__()
+        self.metric = CrFiqaMetric(in_features, out_features, s, m)
+        self.criterion = torch.nn.CrossEntropyLoss()
+        self.criterion_qs= torch.nn.SmoothL1Loss(beta=0.5)
+        self.alpha= alpha
+    def forward(self, features, qs, label):
+        thetas, std, ccs, nnccs = self.metric(features, label)
+        loss_qs = self.criterion_qs(ccs/ nnccs,qs)
+        loss_v = self.criterion(thetas, label) + self.alpha* loss_qs
+        return loss_v, thetas
+
 class OnTopQS(nn.Module):
     def __init__(self,
                  num_features=512):
@@ -17,7 +31,7 @@ def l2_norm(input, axis = 1):
     return output
 
 
-class CR_FIQA_LOSS(nn.Module):
+class CrFiqaMetric(nn.Module):
     r"""Implement of ArcFace:
         Args:
             in_features: size of each input sample
@@ -28,7 +42,7 @@ class CR_FIQA_LOSS(nn.Module):
         """
 
     def __init__(self, in_features, out_features, s=64.0, m=0.50):
-        super(CR_FIQA_LOSS, self).__init__()
+        super(CrFiqaMetric, self).__init__()
         self.in_features = in_features
         self.out_features = out_features
         self.s = s
