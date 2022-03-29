@@ -138,20 +138,25 @@ def main(args, mode):
                 val.cpu().detach().numpy().tolist(), 
                 [l.cpu().detach().numpy() for l in vec]
             ))
-        scores = pairs_impostor_scores(
-            data_loader.iris_predict.pairs,
-            data_loader.iris_predict.impostors, vectors
-        )
+        
         with open(os.path.join(
             args["resume_dir"],
             'vectors-{}.pickle'.format(args["run_name"])
         ), "wb") as f:
             pickle.dump(vectors, f)
-        with open(os.path.join(
-            args["resume_dir"],  
-            'scores-{}.pickle'.format(args["run_name"])
-        ), "wb") as f:
-            pickle.dump(scores, f)
+        
+        for distance in ["euclidean", "cityblock", "cosine"]:
+            scores = pairs_impostor_scores(
+                data_loader.iris_predict.pairs,
+                data_loader.iris_predict.impostors,
+                vectors,
+                distance
+            )
+            with open(os.path.join(
+                args["resume_dir"],
+                'scores-{}-{}.pickle'.format(distance, args["run_name"])
+            ), "wb") as f:
+                pickle.dump(scores, f)
     else:
         assert False, "Not implemented!"
 

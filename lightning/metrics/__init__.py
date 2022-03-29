@@ -3,3 +3,4 @@ from .linearloss import LinearLoss
 from .passthroughloss import PassthroughLoss
 from .magface import MagFaceLoss
 from .crfiqaloss import CrFiqaLoss
+from .pfeloss import MLSLoss, UncertaintyHead

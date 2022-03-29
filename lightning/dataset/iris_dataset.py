@@ -93,7 +93,7 @@ class IrisDatasetBase(VisionDataset):
     # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
     # # # # # # # #   PREIMPLEMENTED METHODS  # # # # # # # # # # # # #
     # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-    def __get_img(self, index: int) -> Tuple[torch.Tensor]:
+    def get_img(self, index: int) -> Tuple[torch.Tensor]:
         """Get tensor of image on the specified index
 
         Args:
@@ -127,7 +127,7 @@ class IrisDatasetBase(VisionDataset):
             Tuple[torch.Tensor, Any]: Tuple for training containing 
             transformed image and a label
         """
-        img = self.__get_img(index)
+        img = self.get_img(index)
         label = self.get_img_label(index)
         if self.transform is not None:
             img = self.transform(img)
@@ -205,6 +205,122 @@ class IrisVerificationDataset(IrisDatasetBase):
         transform: Optional[Callable] = None
     ) -> None:
         super(IrisVerificationDataset, self).__init__(
+            root, autocrop, unwrap, transform
+        )
+        self.dataset: IrisDatasetBase = None
+        if self.is_v1(root):
+            self.dataset = IrisVerificationDatasetV1(
+                root, autocrop, unwrap, transform
+            )
+        elif self.is_v2(root):
+            self.dataset = IrisVerificationDatasetV2(
+                root, autocrop, unwrap, transform
+            )
+        else:
+            raise ValueError
+    @staticmethod
+    def is_v1(root: str):
+        val = True
+        val = val and os.path.exists(os.path.join(root, 'annotations.csv'))
+        val = val and os.path.exists(os.path.join(root, 'mapping.csv'))
+        val = val and os.path.exists(os.path.join(root, 'pairs.csv'))
+        val = val and os.path.exists(os.path.join(root, 'impostors.csv'))
+        return val
+    def is_v2(root: str):
+        val = True
+        val = val and os.path.exists(os.path.join(root, 'labels.csv'))
+        val = val and os.path.exists(os.path.join(root, 'pairs.csv'))
+        val = val and os.path.exists(os.path.join(root, 'images'))
+        return val
+    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+    # # # # # # # # #  OVERRIDDEN METHODS   # # # # # # # # # # # # # #
+    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+    @property
+    def size(self):
+        return self.dataset.size
+    def get_img_annotation(self, index: int) -> dict:
+        return self.dataset.get_img_annotation(index)
+    def get_img_label(self, index: int) -> str:
+        return self.dataset.get_img_label(index)
+    def get_img_binary(self, index: int) -> bytes:
+        return self.dataset.get_img_binary(index)
+
+
+class IrisVerificationDatasetV2(IrisDatasetBase):
+    def __init__(
+        self, 
+        root: str,
+        autocrop: bool = True,
+        unwrap: bool = False,
+        transform: Optional[Callable] = None
+    ) -> None:
+        super(IrisVerificationDatasetV2, self).__init__(
+            root, autocrop, unwrap, transform
+        )
+        self.__load_subset()
+    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+    # # # # # # # # #  OVERRIDDEN METHODS   # # # # # # # # # # # # # #
+    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+    @property
+    def size(self):
+        return len(self.anotations)
+    def get_img_annotation(self, index: int) -> dict:
+        return self.anotations[index]
+    def get_img_label(self, index: int) -> str:
+        annotation = self.get_img_annotation(index)
+        return int(annotation['image_id'])
+    def get_img_binary(self, index: int) -> bytes:
+        annotation = self.get_img_annotation(index)
+        img_path = os.path.join(
+            self.root,'images',
+            annotation['image_id']
+        )
+        with open(img_path, "rb") as i:
+            return i.read()
+    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+    # # # # # # # # # #  HELPER METHODS   # # # # # # # # # # # # # # #
+    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #    
+    def __load_subset(self):
+        self.__load_labels_csv()
+        self.__load_pairs_csv()
+
+    def __load_labels_csv(self):
+        with open(
+            os.path.join(self.root, 'labels.csv'), newline=''
+        ) as csvfile:
+            csv_file = csv.reader(csvfile, delimiter=';', quotechar='"')
+            self.header = next(csv_file)
+            self.anotations = [
+                dict(zip(self.header, entry)) for entry in csv_file
+            ]
+
+    def __load_pairs_csv(self):
+        with open(
+            os.path.join(self.root, 'pairs.csv'), newline=''
+        ) as csvfile:
+            csv_file = csv.reader(csvfile, delimiter=';', quotechar='"')
+            next(csv_file)
+            self.pairs = [(x[0], x[1], bool(x[2])) for x in csv_file]
+            self.impostors = [
+                (x[0], x[1]) for x in filter(
+                    lambda x: x[2] == True, self.pairs
+                )
+            ]
+            self.pairs = [
+                (x[0], x[1]) for x in filter(
+                    lambda x: x[2] == False, self.pairs
+                )
+            ]
+
+class IrisVerificationDatasetV1(IrisDatasetBase):
+    def __init__(
+        self, 
+        root: str,
+        autocrop: bool = True,
+        unwrap: bool = False,
+        transform: Optional[Callable] = None
+    ) -> None:
+        super(IrisVerificationDatasetV1, self).__init__(
             root, autocrop, unwrap, transform
         )
         self.__load_subset()
@@ -309,13 +425,13 @@ class IrisDataset(IrisDatasetBase):
     @property
     def size(self):
         return len(self.annotations)
-    def img_annotation(self, index: int) -> dict:
+    def get_img_annotation(self, index: int) -> dict:
         return self.annotations[index]
-    def img_label(self, index: int) -> int:
+    def get_img_label(self, index: int) -> int:
         entry = self.get_img_annotation(index)
         return entry['__class_number']
-    def img_binary(self, index: int): 
-        entry = self.entry_list[index]
+    def get_img_binary(self, index: int): 
+        entry = self.get_img_annotation(index)
         img_path = os.path.join(
             self.root, entry['__subset'],
             entry['image_id'],'iris_right.UNKNOWN'
