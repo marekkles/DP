@@ -238,6 +238,12 @@ class IrisVerificationDataset(IrisDatasetBase):
     @property
     def size(self):
         return self.dataset.size
+    @property
+    def pairs(self):
+        return self.dataset.pairs
+    @property
+    def impostors(self):
+        return self.dataset.impostors
     def get_img_annotation(self, index: int) -> dict:
         return self.dataset.get_img_annotation(index)
     def get_img_label(self, index: int) -> str:
