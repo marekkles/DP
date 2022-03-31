@@ -68,7 +68,7 @@ def main(args, mode):
         CSVLogger(save_dir=args["run_root_dir"], 
                   name=None, version='csvs'),
     ]
-    if args['use_wandb']:
+    if args['use_wandb'] and (mode == "train" or mode == "train+evaluate+export"):
         loggers.append(
             WandbLogger(
                 name=args["run_name"],
