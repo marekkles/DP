@@ -485,7 +485,22 @@ class IrisDataset(IrisDatasetBase):
     @property
     def expected_num_classes(self):
         return sum(IrisDataset.SUBSETS[s]['num_classes'] for s in self.subsets)
-    
+
+
+class IrisVerificationDatasetPseudo(IrisDataset):
+    def __init__(
+        self, 
+        root: str,
+        subsets: list,
+        autocrop: bool = True,
+        unwrap: bool = False,
+        transform: Optional[Callable] = None,
+    ) -> None:
+        super(IrisDataset, self).__init__(
+            root, subsets, autocrop, unwrap, transform,
+        )
+    def get_img_label(self, index: int) -> int:
+        return self.get_img_annotation(index)['image_id']
 
 class DatasetSubset(VisionDataset):
     def __init__(
