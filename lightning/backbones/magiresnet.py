@@ -150,30 +150,26 @@ class MagIResNet(nn.Module):
         return x
 
 
-def _magiresnet(arch, block, layers, pretrained, progress, **kwargs):
+def _magiresnet(block, layers, pretrained, progress, **kwargs):
     model = MagIResNet(block, layers, **kwargs)
-    # if pretrained:
-    # state_dict = load_state_dict_from_url(model_urls[arch],
-    #                                        progress=progress)
-    # model.load_state_dict(state_dict)
     return model
 
 
 def magiresnet18(pretrained=False, progress=True, **kwargs):
-    return _magiresnet('iresnet18', MagIBasicBlock, [2, 2, 2, 2], pretrained, progress,
+    return _magiresnet(MagIBasicBlock, [2, 2, 2, 2], pretrained, progress,
                     **kwargs)
 
 
 def magiresnet34(pretrained=False, progress=True, **kwargs):
-    return _magiresnet('iresnet34', MagIBasicBlock, [3, 4, 6, 3], pretrained, progress,
+    return _magiresnet(MagIBasicBlock, [3, 4, 6, 3], pretrained, progress,
                     **kwargs)
 
 
 def magiresnet50(pretrained=False, progress=True, **kwargs):
-    return _magiresnet('iresnet50', MagIBasicBlock, [3, 4, 14, 3], pretrained, progress,
+    return _magiresnet(MagIBasicBlock, [3, 4, 14, 3], pretrained, progress,
                     **kwargs)
 
 
 def magiresnet100(pretrained=False, progress=True, **kwargs):
-    return _magiresnet('iresnet100', MagIBasicBlock, [3, 13, 30, 3], pretrained, progress,
+    return _magiresnet(MagIBasicBlock, [3, 13, 30, 3], pretrained, progress,
                     **kwargs)
