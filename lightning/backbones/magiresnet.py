@@ -59,11 +59,11 @@ class MagIBasicBlock(nn.Module):
 class MagIResNet(nn.Module):
     fc_scale = 7 * 7
 
-    def __init__(self, block, layers, num_classes=512, zero_init_residual=False,
+    def __init__(self, block, layers, in_channels=3, num_classes=512, zero_init_residual=False,
                  groups=1, width_per_group=64, replace_stride_with_dilation=None, 
                  dropout_prob0=0.0):
         super(MagIResNet, self).__init__()
-
+        self.in_channels = in_channels
         self.inplanes = 64
         self.dilation = 1
         if replace_stride_with_dilation is None:
@@ -76,8 +76,8 @@ class MagIResNet(nn.Module):
         self.dropout_prob0 = dropout_prob0
         self.groups = groups
         self.base_width = width_per_group
-        self.conv1 = nn.Conv2d(3, self.inplanes, kernel_size=3, stride=1, padding=1,
-                               bias=False)
+        self.conv1 = nn.Conv2d(self.in_channels, self.inplanes, kernel_size=3, 
+                               stride=1, padding=1, bias=False)
         self.bn1 = nn.BatchNorm2d(self.inplanes, eps=2e-05, momentum=0.9)
         self.prelu = nn.PReLU(self.inplanes)
         self.layer1 = self._make_layer(block, 64, layers[0], stride=2)
