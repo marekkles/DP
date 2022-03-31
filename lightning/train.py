@@ -126,6 +126,12 @@ def main(args, mode):
             model,
             data_loader
         )
+    if mode == "export" or mode == "train+evaluate+export":
+        encoder_state_dict = model.encoder.state_dict()
+        torch.save(model.state_dict(), os.path.join(
+            args["run_root_dir"],
+            'encoder-{}.pickle'.format(args["run_name"])
+        ))
     if mode == "evaluate" or mode == "train+evaluate+export":
         data = trainer.predict(
             model,
@@ -144,12 +150,7 @@ def main(args, mode):
             'vectors-{}.pickle'.format(args["run_name"])
         ), "wb") as f:
             pickle.dump(vectors, f)
-    if mode == "export" or mode == "train+evaluate+export":
-        encoder_state_dict = model.encoder.state_dict()
-        torch.save(model.state_dict(), os.path.join(
-            args["run_root_dir"],
-            'encoder-{}.pickle'.format(args["run_name"])
-        ))
+    
 
 def get_args_parser(add_help=True):
     import argparse
