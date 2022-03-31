@@ -1,4 +1,5 @@
 from .iris_dataset import IrisVerificationDataset, IrisDataset, DatasetSubset
+import torch
 from torch import randperm
 from torch.utils.data import DataLoader
 from typing import Optional
@@ -13,6 +14,7 @@ class IrisDataModule(pl.LightningDataModule):
             predic_data_dir: str,
             auto_crop: bool = True,
             unwrap: bool = False,
+            shuffle: bool = True,
             batch_size: int = 32,
             num_workers: int = 4,
             train_transform = None,
@@ -27,7 +29,8 @@ class IrisDataModule(pl.LightningDataModule):
         self.data_dir = data_dir
         self.predict_data_dir = predic_data_dir
         self.auto_crop = auto_crop
-        self.unwrap =unwrap
+        self.unwrap = unwrap
+        self.shuffle = shuffle
         self.batch_size = batch_size
         self.num_workers = num_workers
         self.train_transform = train_transform
@@ -53,7 +56,10 @@ class IrisDataModule(pl.LightningDataModule):
     def setup(self, stage: Optional[str] = None):
         lengths = [int(l*len(self.iris_full)) for l in  self.traint_val_test_split]
         lengths[-1] += len(self.iris_full) - sum(lengths)
-        perms = randperm(sum(lengths)).tolist()
+        if self.shuffle:
+            perms = randperm(sum(lengths)).tolist()
+        else:
+            perms = torch.range(0, sum(lengths), dtype=torch.int32).tolist()
         aggs = [sum(lengths[:0]), sum(lengths[:1]), sum(lengths[:2]), sum(lengths[:3])]
         subsets = [perms[start:end] for start, end in zip(aggs[:-1], aggs[1:])]
         

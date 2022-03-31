@@ -3,6 +3,7 @@ import csv
 import functools
 from abc import ABC, abstractmethod
 from collections.abc import Callable
+import random
 from typing import Optional, Tuple, Any
 import io
 import math
@@ -407,6 +408,7 @@ class IrisDataset(IrisDatasetBase):
         self, 
         root: str,
         subsets: list,
+        class_group_size:int = 4,
         autocrop: bool = True,
         unwrap: bool = False,
         transform: Optional[Callable] = None,
@@ -420,7 +422,9 @@ class IrisDataset(IrisDatasetBase):
             "Subsets must be list of strings"
             
         self.subsets = subsets
+        self.class_group_size = class_group_size
         self.__load_subsets_anotations()
+        self.__group_annotations_by_class()
         assert (
             self.expected_size == self.size and
             self.expected_num_classes == self.num_classes
@@ -476,6 +480,29 @@ class IrisDataset(IrisDatasetBase):
         entry_dict['__class_string'] = entry_class_string
         entry_dict['__class_number'] = self.classes_dict[entry_class_string]
         self.annotations.append(entry_dict)
+    def __group_annotations_by_class(self):
+        class_annotations_idx = {}
+        for i, annotation in enumerate(self.annotations):
+            if not annotation['__class_string'] in class_annotations_idx:
+                class_annotations_idx[annotation['__class_string']] = []
+            class_annotations_idx[annotation['__class_string']].append(i)
+        argsort_idxs = []
+        while len(class_annotations_idx) != 0:
+            keys_list = list(class_annotations_idx.keys())
+            random.shuffle(keys_list)
+            for c in keys_list:
+                l = class_annotations_idx[c]
+                if len(l) <= self.class_group_size:
+                    class_annotations_idx.pop(c)
+                    a = l
+                else:
+                    a = l[:self.class_group_size]
+                    class_annotations_idx[c] = l[self.class_group_size:]
+                argsort_idxs.extend(a)
+        annotations_tmp = [self.annotations[i] for i in argsort_idxs]
+        self.annotations = annotations_tmp
+        
+
     @property
     def num_classes(self):
         return len(self.classes_dict)

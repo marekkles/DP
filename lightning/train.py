@@ -102,6 +102,7 @@ def main(args, mode):
         num_workers=args["num_workers"],
         auto_crop=args["auto_crop"],
         unwrap=args["unwrap"],
+        shuffle=args["shuffle"],
     )
     # model
     model = models.__dict__[args["model"]](**args["model_args"])
@@ -128,7 +129,7 @@ def main(args, mode):
         )
     if mode == "export" or mode == "train+evaluate+export":
         encoder_state_dict = model.encoder.state_dict()
-        torch.save(model.state_dict(), os.path.join(
+        torch.save(encoder_state_dict, os.path.join(
             args["run_root_dir"],
             'encoder-{}.pickle'.format(args["run_name"])
         ))
@@ -151,6 +152,7 @@ def main(args, mode):
         ), "wb") as f:
             pickle.dump(vectors, f)
     
+    print("Finished running")
 
 def get_args_parser(add_help=True):
     import argparse
@@ -210,12 +212,12 @@ if __name__ == "__main__":
         with open(args_program.args_path, 'r') as f:
             args_file = yaml.load(f,yaml.FullLoader)
         
-        args_file["run_name"] = '{}-{}-{}-{}'.format(
+        args_file["run_name"] = '{}-{}'.format(
             args_file['model'],
-            args_file['model_args']['backbone'],
-            args_file['model_args']['metric'],
-            name_gen(time.time_ns()//1_000_000_000)
-        )
+            args_file['model_args']['backbone'])
+        if 'metric' in args_file['model_args']:
+            args_file["run_name"] += '-{}'.format(args_file['model_args']['metric'])
+        args_file["run_name"] += '-{}'.format(name_gen(time.time_ns()//1_000_000_000))
 
         args_file["run_root_dir"] = os.path.join(
             args_file["root_dir"], args_file["run_name"]

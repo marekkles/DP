@@ -51,10 +51,7 @@ class PfeNet(pl.LightningModule):
         return embedding, deviation
     def configure_optimizers(self):
         optimizer = torch.optim.__dict__[self.optim](
-            [
-                {'params': self.encoder.parameters()},
-                {'params': self.uncertainty_head.parameters()},
-            ], 
+            self.uncertainty_head.parameters(), 
             **self.optim_args
         )
         lr_scheduler = torch.optim.lr_scheduler.__dict__[self.lr_scheduler](
@@ -81,4 +78,5 @@ class PfeNet(pl.LightningModule):
         self.log('test_loss', loss)
     def predict_step(self, batch, batch_idx):
         x, y = batch
-        return self(x), y
+        embedding, deviation = self(x)
+        return (embedding, deviation), y

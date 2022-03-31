@@ -26,18 +26,20 @@ dataset_subsets:
 predic_dataset: ../Datasets/iris_verification_NDCSI2013_01_05
 
 #Training specific options
-batch_size: 16
+batch_size: 64
 max_epochs: 120
-num_workers: 4
+num_workers: 2
 
 auto_crop: True
-unwrap: False
+unwrap: True
+shuffle: False
 
 #Configure model for training
-model: CrFiqaNet
+model: PfeNet
 model_args:
     #Backbone convolutionsal network config
-    backbone: resnet18
+    backbone_checkpoint_path: ../runs/RecognitionNet-iresnet50-MagFaceLoss-2LsJXb/encoder-RecognitionNet-iresnet50-MagFaceLoss-2LsJXb.pickle
+    backbone: iresnet50
     backbone_args:
         dropout_prob0: 0
         in_channels: 1
@@ -45,15 +47,15 @@ model_args:
 
     #Softmax metric configuration
     #Options: ArcFaceLoss, CosFaceLoss, LinearLoss, PassthroughLoss, MagFaceLoss, CrFiqaLoss
-    metric: CrFiqaLoss
-    metric_args:
-        in_features: 512
-        out_features: 1600
+    #metric: MagFaceLoss
+    #metric_args:
+    #    in_features: 512
+    #    out_features: 1600
 
     #Optimizer configuration 
     optim: SGD
     optim_args:
-        lr: 0.1
+        lr: 0.001
         momentum: 0.9
         weight_decay: 0.0001
 
