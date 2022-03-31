@@ -226,6 +226,7 @@ class IrisVerificationDataset(IrisDatasetBase):
         val = val and os.path.exists(os.path.join(root, 'pairs.csv'))
         val = val and os.path.exists(os.path.join(root, 'impostors.csv'))
         return val
+    @staticmethod
     def is_v2(root: str):
         val = True
         val = val and os.path.exists(os.path.join(root, 'labels.csv'))
@@ -272,14 +273,13 @@ class IrisVerificationDatasetV2(IrisDatasetBase):
         return len(self.anotations)
     def get_img_annotation(self, index: int) -> dict:
         return self.anotations[index]
-    def get_img_label(self, index: int) -> str:
-        annotation = self.get_img_annotation(index)
-        return int(annotation['image_id'])
+    def get_img_label(self, index: int) -> int:
+        return self.get_img_annotation(index)['image_id']
     def get_img_binary(self, index: int) -> bytes:
         annotation = self.get_img_annotation(index)
         img_path = os.path.join(
             self.root,'images',
-            annotation['image_id']
+            annotation['image_id']+".png"
         )
         with open(img_path, "rb") as i:
             return i.read()
@@ -306,15 +306,15 @@ class IrisVerificationDatasetV2(IrisDatasetBase):
         ) as csvfile:
             csv_file = csv.reader(csvfile, delimiter=';', quotechar='"')
             next(csv_file)
-            self.pairs = [(x[0], x[1], bool(x[2])) for x in csv_file]
+            self.raw = [(x[0], x[1], int(x[2])) for x in csv_file]
             self.impostors = [
                 (x[0], x[1]) for x in filter(
-                    lambda x: x[2] == True, self.pairs
+                    lambda x: x[2] == 0, self.raw
                 )
             ]
             self.pairs = [
                 (x[0], x[1]) for x in filter(
-                    lambda x: x[2] == False, self.pairs
+                    lambda x: x[2] == 1, self.raw
                 )
             ]
 

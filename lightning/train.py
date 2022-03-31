@@ -66,12 +66,15 @@ def main(args, mode):
     loggers = [
         CSVLogger(save_dir=args["run_root_dir"], 
                   name=None, version='csvs'),
-        WandbLogger(
-            name=args["run_name"],
-            save_dir=args["run_root_dir"],
-            project=args["project_name"]
-        )
     ]
+    if args['use_wandb']:
+        loggers.append(
+            WandbLogger(
+                name=args["run_name"],
+                save_dir=args["run_root_dir"],
+                project=args["project_name"]
+            )
+        )
     #callbacks
     callbacks = [
         pl.callbacks.model_checkpoint.ModelCheckpoint(
@@ -102,6 +105,9 @@ def main(args, mode):
     )
     # model
     model = models.__dict__[args["model"]](**args["model_args"])
+    if "resume_checkpoint" in args:
+        model.load_from_checkpoint(args["resume_checkpoint"])
+
     # training
     trainer = pl.Trainer(
         max_epochs=args["max_epochs"],
@@ -115,50 +121,35 @@ def main(args, mode):
         callbacks=callbacks,
         gradient_clip_val=5, gradient_clip_algorithm="norm"
     )
-    if mode == "train" or mode == "train+evaluate":
+    if mode == "train" or mode == "train+evaluate+export":
         trainer.fit(
             model,
-            data_loader,
-            ckpt_path=(
-                args["resume_checkpoint"] if "resume_checkpoint" in args else None
-            )
+            data_loader
         )
-    if mode == "evaluate" or mode == "train+evaluate":
+    if mode == "evaluate" or mode == "train+evaluate+export":
         data = trainer.predict(
             model,
             data_loader,
-            ckpt_path=(
-                args["resume_checkpoint"] if "resume_checkpoint" in args else None
-            ),
             return_predictions=True
         )
         vectors = {}
         for vec,val in data:
             vectors.update(zip(
-                val.cpu().detach().numpy().tolist(), 
+                [k for k in val], 
                 [l.cpu().detach().numpy() for l in vec]
             ))
         
         with open(os.path.join(
-            args["resume_dir"],
+            args["run_root_dir"],
             'vectors-{}.pickle'.format(args["run_name"])
         ), "wb") as f:
             pickle.dump(vectors, f)
-        
-        for distance in ["euclidean", "cityblock", "cosine"]:
-            scores = pairs_impostor_scores(
-                data_loader.iris_predict.pairs,
-                data_loader.iris_predict.impostors,
-                vectors,
-                distance
-            )
-            with open(os.path.join(
-                args["resume_dir"],
-                'scores-{}-{}.pickle'.format(distance, args["run_name"])
-            ), "wb") as f:
-                pickle.dump(scores, f)
-    else:
-        assert False, "Not implemented!"
+    if mode == "export" or mode == "train+evaluate+export":
+        encoder_state_dict = model.encoder.state_dict()
+        torch.save(model.state_dict(), os.path.join(
+            args["run_root_dir"],
+            'encoder-{}.pickle'.format(args["run_name"])
+        ))
 
 def get_args_parser(add_help=True):
     import argparse
@@ -174,10 +165,10 @@ def get_args_parser(add_help=True):
     )
     parser.add_argument(
         '--mode',
-        choices=["train", "evaluate", "train+evaluate"],
+        choices=["train", "evaluate", "export", "train+evaluate+export"],
         type=str,
-        default="train+evaluate",
-        help=f"Mode to train or evaluate (default: train)"
+        default="train+evaluate+export",
+        help=f"Mode to train or evaluate (default: train+evaluate+export)"
     )
     parser.add_argument(
         '--resume-dir',
