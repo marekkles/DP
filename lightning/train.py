@@ -126,7 +126,8 @@ def main(args, mode):
         accumulate_grad_batches=args["grad_batches"],
         logger=loggers,
         callbacks=callbacks,
-        gradient_clip_val=5, gradient_clip_algorithm="norm"
+        gradient_clip_val=5, gradient_clip_algorithm="norm",
+        ckpt_path=args["resume_checkpoint"] if "resume_checkpoint" in args else None
     )
     if mode == "train" or mode == "train+evaluate+export":
         trainer.fit(
