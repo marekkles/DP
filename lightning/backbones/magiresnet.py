@@ -60,7 +60,8 @@ class MagIResNet(nn.Module):
     fc_scale = 7 * 7
 
     def __init__(self, block, layers, num_classes=512, zero_init_residual=False,
-                 groups=1, width_per_group=64, replace_stride_with_dilation=None):
+                 groups=1, width_per_group=64, replace_stride_with_dilation=None, 
+                 dropout_prob0=0.0):
         super(MagIResNet, self).__init__()
 
         self.inplanes = 64
@@ -72,6 +73,7 @@ class MagIResNet(nn.Module):
         if len(replace_stride_with_dilation) != 3:
             raise ValueError("replace_stride_with_dilation should be None "
                              "or a 3-element tuple, got {}".format(replace_stride_with_dilation))
+        self.dropout_prob0 = dropout_prob0
         self.groups = groups
         self.base_width = width_per_group
         self.conv1 = nn.Conv2d(3, self.inplanes, kernel_size=3, stride=1, padding=1,
@@ -89,7 +91,8 @@ class MagIResNet(nn.Module):
 
         self.bn2 = nn.BatchNorm2d(
             512 * block.expansion, eps=2e-05, momentum=0.9)
-        self.dropout = nn.Dropout2d(p=0.4, inplace=True)
+        if self.dropout_prob0 != 0:
+            self.dropout = nn.Dropout2d(p=dropout_prob0, inplace=True)
         self.fc = nn.Linear(512 * block.expansion * self.fc_scale, num_classes)
 
         for m in self.modules():
@@ -139,7 +142,8 @@ class MagIResNet(nn.Module):
         x = self.layer4(x)
 
         x = self.bn2(x)
-        x = self.dropout(x)
+        if self.dropout_prob0 != 0:
+            x = self.dropout(x)
         x = x.view(x.size(0), -1)
         x = self.fc(x)
 
