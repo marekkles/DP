@@ -106,10 +106,14 @@ def main(args, mode):
         shuffle=args["shuffle"],
     )
     # model
-    model = models.__dict__[args["model"]](**args["model_args"])
+    
     if "resume_checkpoint" in args:
         print(f"Resuming from checkpoint {args['resume_checkpoint']} ")
-        model = model.load_from_checkpoint(args["resume_checkpoint"])
+        model = models.__dict__[args["model"]].load_from_checkpoint(
+            args["resume_checkpoint"], hparams_file=args_file["resume_hparams"]
+        )
+    else:
+        model = models.__dict__[args["model"]](**args["model_args"])
 
     # training
     trainer = pl.Trainer(
@@ -233,6 +237,10 @@ if __name__ == "__main__":
         args_file['resume_checkpoint'] = os.path.join(
             args_file['resume_dir'], "checkpoints",
             args_program.resume_checkpoint
+        )
+        args_file["resume_hparams"] = os.path.join(
+            args_file['resume_dir'], "csvs",
+            "hparams.yaml"
         )
         if args_file["run_root_dir"] != args_file['resume_dir']:
             warn('Resume directory is different as in argsfile')
