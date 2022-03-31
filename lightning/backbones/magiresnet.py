@@ -57,7 +57,7 @@ class MagIBasicBlock(nn.Module):
 
 
 class MagIResNet(nn.Module):
-    fc_scale = 7 * 7
+    fc_scale = 14 * 14
 
     def __init__(self, block, layers, in_channels=3, num_classes=512, zero_init_residual=False,
                  groups=1, width_per_group=64, replace_stride_with_dilation=None, 
