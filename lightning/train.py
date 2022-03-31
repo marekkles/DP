@@ -108,6 +108,7 @@ def main(args, mode):
     # model
     model = models.__dict__[args["model"]](**args["model_args"])
     if "resume_checkpoint" in args:
+        print(f"Resuming from checkpoint {args['resume_checkpoint']} ")
         model.load_from_checkpoint(args["resume_checkpoint"])
 
     # training
