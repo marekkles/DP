@@ -2,6 +2,7 @@ from copyreg import pickle
 from distutils.log import warn
 import os
 import pickle
+import numpy as np
 import pytorch_lightning as pl
 import torch
 from torchvision import transforms
@@ -128,6 +129,7 @@ def main(args, mode):
             data_loader
         )
     if mode == "export" or mode == "train+evaluate+export":
+        print("Exporting checkpoints backbone")
         encoder_state_dict = model.encoder.state_dict()
         torch.save(encoder_state_dict, os.path.join(
             args["run_root_dir"],
@@ -139,18 +141,44 @@ def main(args, mode):
             data_loader,
             return_predictions=True
         )
-        vectors = {}
-        for vec,val in data:
-            vectors.update(zip(
-                [k for k in val], 
-                [l.cpu().detach().numpy() for l in vec]
-            ))
-        
-        with open(os.path.join(
-            args["run_root_dir"],
-            'vectors-{}.pickle'.format(args["run_name"])
-        ), "wb") as f:
-            pickle.dump(vectors, f)
+        results = {}
+        #Unpack result form list of results into result containing lists
+        for res in data:
+            for k in res:
+                if not k in results:
+                    results[k] = []
+                #Convert data as neccessary
+                if type(res[k]) == torch.Tensor:
+                    results[k].extend(
+                        [i.cpu().detach().numpy() for i in res[k]]
+                    )
+                elif type(res[k]) == tuple:
+                    results[k].extend(list(res[k]))
+                elif type(res[k]) == list:
+                    results[k].extend(res[k])
+        #If evaluated output has label field
+        if "label" in results:
+            results["label"] = [
+                l.item() if type(l) is np.ndarray else l
+                for l in results["label"]
+            ]
+            for k in results:
+                if k != "label":
+                    dat = dict(zip(results["label"], results[k]))
+                    with open(os.path.join(
+                        args["run_root_dir"],
+                        '{}-{}.pickle'.format(k, args["run_name"])
+                    ), "wb") as f:
+                        pickle.dump(dat, f)
+        #If evaluated output is unlabeled
+        else:
+            for k in results:
+                dat = results[k]
+                with open(os.path.join(
+                    args["run_root_dir"],
+                    '{}-{}.pickle'.format(k, args["run_name"])
+                ), "wb") as f:
+                    pickle.dump(dat, f)
     
     print("Finished running")
 

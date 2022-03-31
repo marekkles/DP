@@ -2,7 +2,7 @@
 root_dir: runs
 
 #Weights and Biases config
-use_wandb: True
+use_wandb: False
 project_name: dp-debug
 log_steps: 10
 
@@ -23,7 +23,7 @@ dataset_subsets:
 #- train_iris_nd_0405
 #- train_iris_utris_v1
 #Dataset for predictions
-predic_dataset: ../Datasets/iris_verification_NDCSI2013_01_05
+predic_dataset: ../Datasets/iris_verification_iitd_01_01
 
 #Training specific options
 batch_size: 64

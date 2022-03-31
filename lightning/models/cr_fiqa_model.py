@@ -93,4 +93,5 @@ class CrFiqaNet(pl.LightningModule):
         self.log('test_acc', self.validation_accuracy)
     def predict_step(self, batch, batch_idx):
         x, y = batch
-        return self(x), y
+        embedding, quality = self(x)
+        return {"embedding" : embedding, "quality" : quality, "label": y}

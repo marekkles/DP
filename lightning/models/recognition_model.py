@@ -83,5 +83,6 @@ class RecognitionNet(pl.LightningModule):
         self.log('test_loss', loss)
     def predict_step(self, batch, batch_idx):
         x, y = batch
-        return self(x), y
+        embedding = self(x)
+        return {"embedding" : embedding, "label": y}
 

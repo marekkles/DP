@@ -79,4 +79,4 @@ class PfeNet(pl.LightningModule):
     def predict_step(self, batch, batch_idx):
         x, y = batch
         embedding, deviation = self(x)
-        return (embedding, deviation), y
+        return {"embedding" : embedding, "deviation" : deviation, "label": y}

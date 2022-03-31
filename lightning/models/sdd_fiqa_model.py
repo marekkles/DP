@@ -32,8 +32,6 @@ class PfeNet(pl.LightningModule):
         assert backbone in available_backbones, f"{backbone} is not valid\
              backbone, Available backbones are {' '.join(available_backbones)}"
         self.encoder = backbones.__dict__[backbone](**backbone_args)
-        self.uncertainty_head = UncertaintyHead(backbone_args["num_classes"])
-        self.loss = MLSLoss()
         self.optim = optim
         self.optim_args = optim_args
         self.lr_scheduler=lr_scheduler
@@ -78,4 +76,5 @@ class PfeNet(pl.LightningModule):
         self.log('test_loss', loss)
     def predict_step(self, batch, batch_idx):
         x, y = batch
-        return self(x), y
+        quality = self(x)
+        return  {"quality" : quality, "label": y}
