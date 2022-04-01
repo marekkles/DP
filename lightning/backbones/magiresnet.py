@@ -131,7 +131,7 @@ class MagIResNet(nn.Module):
 
         return nn.Sequential(*layers)
 
-    def forward(self, x):
+    def forward(self, x, repeat_before_dropout:int = 1):
         x = self.conv1(x)
         x = self.bn1(x)
         x = self.prelu(x)
@@ -142,6 +142,7 @@ class MagIResNet(nn.Module):
         x = self.layer4(x)
 
         x = self.bn2(x)
+        x = x.repeat(repeat_before_dropout, 1)
         if self.dropout_prob0 != 0:
             x = self.dropout(x)
         x = x.view(x.size(0), -1)
