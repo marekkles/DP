@@ -1,10 +1,11 @@
+from ast import Dict
 import os
 import csv
 import functools
 from abc import ABC, abstractmethod
 from collections.abc import Callable
 import random
-from typing import Optional, Tuple, Any
+from typing import List, Optional, Tuple, Any, Union
 import io
 import math
 
@@ -12,6 +13,12 @@ import numpy as np
 import torch
 from torchvision.datasets.vision import VisionDataset
 from PIL import Image
+
+__all__ = [
+    'IrisDatasetBase', 'IrisVerificationDataset', 
+    'IrisVerificationDatasetV2', 'IrisVerificationDatasetV1', 
+    'IrisVerificationDatasetPseudo', 'IrisDataset', 'DatasetSubset'
+]
 
 class IrisDatasetBase(VisionDataset):
     """A abstract base class for iris dataset objects
@@ -201,24 +208,42 @@ class IrisVerificationDataset(IrisDatasetBase):
     def __init__(
         self, 
         root: str,
-        autocrop: bool = True,
-        unwrap: bool = False,
-        transform: Optional[Callable] = None
+        autocrop: Optional[bool] = True,
+        unwrap: Optional[bool] = False,
+        transform: Optional[Callable] = None,
+        train_subset: Optional[List[str]] = None
     ) -> None:
+        """Verification dataset which combines v1 and v2 ways of loading data
+
+        Args:
+            root (str): Root directory of the dataset
+            autocrop (bool, optional): Autocrop image. Defaults to True.
+            unwrap (bool, optional): Unwrap iris. Defaults to False.
+            transform (Callable, optional): Optional transforms. Defaults to None.
+            train_sets (List[str], optional): Specify pseudo verification set.
+
+        Raises:
+            ValueError: If root directory does not contain valid structure.
+        """
         super(IrisVerificationDataset, self).__init__(
             root, autocrop, unwrap, transform
         )
         self.dataset: IrisDatasetBase = None
-        if self.is_v1(root):
-            self.dataset = IrisVerificationDatasetV1(
-                root, autocrop, unwrap, transform
-            )
-        elif self.is_v2(root):
-            self.dataset = IrisVerificationDatasetV2(
-                root, autocrop, unwrap, transform
-            )
+        if train_subset is None:
+            if self.is_v1(root):
+                self.dataset = IrisVerificationDatasetV1(
+                    root, autocrop, unwrap, transform
+                )
+            elif self.is_v2(root):
+                self.dataset = IrisVerificationDatasetV2(
+                    root, autocrop, unwrap, transform
+                )
+            else:
+                raise ValueError
         else:
-            raise ValueError
+            self.dataset = IrisVerificationDatasetPseudo(
+                root, train_subset, autocrop, unwrap, transform
+            )
     @staticmethod
     def is_v1(root: str):
         val = True
@@ -404,13 +429,15 @@ class IrisDataset(IrisDatasetBase):
         'train_iris_utris_v1': {'size': 542, 'num_classes': 108},
     }
     CLASS_STRING_FORMAT='{__subset}:{subject_id}_{eye_side}'
+    IMAGE_ID_STRING_FORMAT='{__subset}:{image_id}'
     def __init__(
         self, 
         root: str,
         subsets: list,
-        class_group_size:int = 4,
-        autocrop: bool = True,
-        unwrap: bool = False,
+        pseudolabels: Optional[dict] = None,
+        class_group_size: Optional[int] = 4,
+        autocrop: Optional[bool] = True,
+        unwrap: Optional[bool] = False,
         transform: Optional[Callable] = None,
     ) -> None:
         super(IrisDataset, self).__init__(
@@ -422,6 +449,7 @@ class IrisDataset(IrisDatasetBase):
             "Subsets must be list of strings"
             
         self.subsets = subsets
+        self.pseudolabels = pseudolabels
         self.class_group_size = class_group_size
         self.__load_subsets_anotations()
         self.__group_annotations_by_class()
@@ -439,7 +467,11 @@ class IrisDataset(IrisDatasetBase):
         return self.annotations[index]
     def get_img_label(self, index: int) -> int:
         entry = self.get_img_annotation(index)
-        return entry['__class_number']
+        if self.pseudolabels is None:
+            label = entry['__class_number']
+        else:
+            label = self.pseudolabels[entry['__image_id']]
+        return label
     def get_img_binary(self, index: int): 
         entry = self.get_img_annotation(index)
         img_path = os.path.join(
@@ -475,8 +507,12 @@ class IrisDataset(IrisDatasetBase):
         entry_class_string = (
             IrisDataset.CLASS_STRING_FORMAT.format(**entry_dict)
         )
+        entry_image_id_string = (
+            IrisDataset.IMAGE_ID_STRING_FORMAT.format(**entry_dict)
+        )
         if not entry_class_string in self.classes_dict:
             self.classes_dict[entry_class_string] = len(self.classes_dict)
+        entry_dict['__image_id'] = entry_image_id_string
         entry_dict['__class_string'] = entry_class_string
         entry_dict['__class_number'] = self.classes_dict[entry_class_string]
         self.annotations.append(entry_dict)
@@ -519,15 +555,16 @@ class IrisVerificationDatasetPseudo(IrisDataset):
         self, 
         root: str,
         subsets: list,
-        autocrop: bool = True,
-        unwrap: bool = False,
+        pseudolabels: Optional[dict] = None,
+        autocrop: Optional[bool] = True,
+        unwrap: Optional[bool] = False,
         transform: Optional[Callable] = None,
     ) -> None:
-        super(IrisDataset, self).__init__(
-            root, subsets, autocrop, unwrap, transform,
+        super(IrisVerificationDatasetPseudo, self).__init__(
+            root, subsets, pseudolabels, autocrop, unwrap, transform,
         )
-    def get_img_label(self, index: int) -> int:
-        return self.get_img_annotation(index)['image_id']
+    def get_img_label(self, index: int) -> str:
+        return self.get_img_annotation(index)['__image_id']
 
 class DatasetSubset(VisionDataset):
     def __init__(

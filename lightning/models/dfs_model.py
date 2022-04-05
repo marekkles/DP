@@ -5,13 +5,14 @@ import torch.nn as nn
 from torch.nn import init
 import torch.nn.functional as F
 import torchvision
+import pytorch_lightning as pl
 
-__all__ = ['MobileNetV2_Lite']
+__all__ = ['DfsNet']
 
 class MobileNetV2_encoder(nn.Module):
-    def __init__(self, pretrained=True):
+    def __init__(self, pretrained):
         super(MobileNetV2_encoder, self).__init__()
-        model = torchvision.models.mobilenet_v2(pretrained=True)
+        model = torchvision.models.mobilenet_v2(pretrained=pretrained)
         self.low_feature = model.features[:5]
         self.high_feature = model.features[5:]
 
@@ -65,7 +66,7 @@ class LRASPPV2(nn.Module):
 
 
 class MobileNetV2_Lite(nn.Module):
-    def __init__(self, pretrained=True, mask_learn_rate=0.5):
+    def __init__(self, pretrained=False, mask_learn_rate=0.5):
         super(MobileNetV2_Lite, self).__init__()
         self.encoder = MobileNetV2_encoder(pretrained)
 
@@ -127,14 +128,21 @@ class MobileNetV2_Lite(nn.Module):
         return pred, out_mask
 
 
-if __name__ == '__main__':
-    vn = MobileNetV2_Lite(True, False)
-    c = torch.randn(2, 3, 640, 480)
-    out = vn(c)
+class DfsNet(pl.LightningModule):
+    def __init__(
+        self,
+        mobilenet_checkpoint: str
+    ):
+        super().__init__()
+        self.mobilenet_checkpoint = mobilenet_checkpoint
+        self.mobilenet = MobileNetV2_Lite()
+        self.mobilenet.load_state_dict(torch.load(self.mobilenet_checkpoint))
+        self.save_hyperparameters()
+    def forward(self, x):
+        pred, out_mask = self.mobilenet(x)
+        return pred, out_mask
+    def predict_step(self, batch, batch_idx):
+        x, y = batch
+        quality, mask = self(x)
+        return  {"quality" : quality, "mask" : mask, "label": y}
 
-    print(out[0], out[1].shape)
-    from thop import profile, clever_format
-
-    flops, params = profile(vn, inputs=(c, ))
-    flops, params = clever_format([flops, params], "%.3f")
-    print('flops:{} params:{}'.format(flops, params))

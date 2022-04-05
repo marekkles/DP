@@ -26,7 +26,50 @@ def name_gen(timestamp: int):
         ts = ts // len(available_chars)
         name.append(available_chars[idx])
     return ''.join(name)
-        
+
+def unpack_results(data):
+    results = {}
+    #Unpack result form list of results into result containing lists
+    for res in data:
+        for k in res:
+            if not k in results:
+                results[k] = []
+            #Convert data as neccessary
+            if type(res[k]) == torch.Tensor:
+                results[k].extend(
+                    [i.cpu().detach().numpy() for i in res[k]]
+                )
+            elif type(res[k]) == tuple:
+                results[k].extend(list(res[k]))
+            elif type(res[k]) == list:
+                results[k].extend(res[k])
+    return results
+
+def save_labeled_results(results, root_dir, run_name, dataset_name):
+    results["label"] = [
+        l.item() if type(l) is np.ndarray else l
+        for l in results["label"]
+    ]
+    for field_name in results:
+        if field_name == "label":
+            continue
+
+        data = dict(zip(results["label"], results[field_name]))
+        pickle_file_path = os.path.join(
+            root_dir, f"{field_name}-{run_name}-{dataset_name}"
+        )
+        with open(pickle_file_path, "wb") as f:
+            pickle.dump(data, f)
+
+def save_unlabeled_results(results, root_dir, run_name, dataset_name):
+    for field_name in results:
+        data = results[field_name]
+        pickle_file_path = os.path.join(
+            root_dir, f"{field_name}-{run_name}-{dataset_name}"
+        )
+        with open(pickle_file_path, "wb") as f:
+            pickle.dump(data, f)
+
 def main(args, mode):
     
     #transforms
@@ -69,6 +112,7 @@ def main(args, mode):
                   name=None, version='csvs'),
     ]
     if args['use_wandb'] and (mode == "train" or mode == "train+evaluate+export"):
+        print(f"Using Weights&Biases under project {args['project_name']} ")
         loggers.append(
             WandbLogger(
                 name=args["run_name"],
@@ -92,20 +136,18 @@ def main(args, mode):
     ]
     # data
     data_loader = IrisDataModule(
-        data_dir=args["dataset_root"],
-        subsets=args["dataset_subsets"],
-        predic_data_dir=args["predic_dataset"],
+        root_dir=args["dataset_root"],
+        batch_size=args["batch_size"],
+        num_workers=args["num_workers"],
+        train_subset=args["dataset_subsets"],
+        auto_crop=args["auto_crop"],
+        unwrap=args["unwrap"],
+        shuffle=args["shuffle"],
         train_transform=train_transform,
         val_transform=val_transform,
         test_transform=test_transform,
         predict_transform=predict_transform,
-        batch_size=args["batch_size"],
-        num_workers=args["num_workers"],
-        auto_crop=args["auto_crop"],
-        unwrap=args["unwrap"],
-        shuffle=args["shuffle"],
     )
-    # model
     
     if "resume_checkpoint" in args:
         print(f"Resuming from checkpoint {args['resume_checkpoint']} ")
@@ -113,6 +155,7 @@ def main(args, mode):
             args["resume_checkpoint"], hparams_file=args_file["resume_hparams"]
         )
     else:
+        print(f"Creating new model")
         model = models.__dict__[args["model"]](**args["model_args"])
 
     # training
@@ -129,6 +172,7 @@ def main(args, mode):
         gradient_clip_val=5, gradient_clip_algorithm="norm",
     )
     if mode == "train" or mode == "train+evaluate+export":
+        print(f"Starting trainning")
         trainer.fit(
             model,
             data_loader,
@@ -142,50 +186,29 @@ def main(args, mode):
             'encoder-{}.pickle'.format(args["run_name"])
         ))
     if mode == "evaluate" or mode == "train+evaluate+export":
-        data = trainer.predict(
-            model,
-            data_loader,
-            return_predictions=True
-        )
-        results = {}
-        #Unpack result form list of results into result containing lists
-        for res in data:
-            for k in res:
-                if not k in results:
-                    results[k] = []
-                #Convert data as neccessary
-                if type(res[k]) == torch.Tensor:
-                    results[k].extend(
-                        [i.cpu().detach().numpy() for i in res[k]]
-                    )
-                elif type(res[k]) == tuple:
-                    results[k].extend(list(res[k]))
-                elif type(res[k]) == list:
-                    results[k].extend(res[k])
-        #If evaluated output has label field
-        if "label" in results:
-            results["label"] = [
-                l.item() if type(l) is np.ndarray else l
-                for l in results["label"]
-            ]
-            for k in results:
-                if k != "label":
-                    dat = dict(zip(results["label"], results[k]))
-                    with open(os.path.join(
-                        args["run_root_dir"],
-                        '{}-{}.pickle'.format(k, args["run_name"])
-                    ), "wb") as f:
-                        pickle.dump(dat, f)
-        #If evaluated output is unlabeled
-        else:
-            for k in results:
-                dat = results[k]
-                with open(os.path.join(
-                    args["run_root_dir"],
-                    '{}-{}.pickle'.format(k, args["run_name"])
-                ), "wb") as f:
-                    pickle.dump(dat, f)
-    
+        print("Evaluating model")
+        for predict_dataset in data_loader.iris_predict_list:
+            print(f"Predict for dataset: {predict_dataset}")
+            data_loader.iris_predict_select(predict_dataset)
+            data = trainer.predict(
+                model,
+                data_loader,
+                return_predictions=True
+            )
+            #unpack results
+            results = unpack_results(data)
+            #If evaluated output has label field
+            if "label" in results:
+                save_labeled_results(
+                    results, args["run_root_dir"], 
+                    args["run_name"], predict_dataset
+                )            
+            #If evaluated output is unlabeled
+            else:
+                save_unlabeled_results(
+                    results, args["run_root_dir"], 
+                    args["run_name"], predict_dataset
+                )
     print("Finished running")
 
 def get_args_parser(add_help=True):

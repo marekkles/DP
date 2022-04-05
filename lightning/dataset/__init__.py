@@ -1,3 +1,3 @@
-from .datamodule import IrisDataModule
-from .iris_dataset import IrisDataset, IrisVerificationDataset
+from .datamodule import *
+from .iris_dataset import *
 from pl_bolts.datamodules import *

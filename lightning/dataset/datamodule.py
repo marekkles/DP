@@ -1,55 +1,109 @@
+import os
+import pickle
 from .iris_dataset import IrisVerificationDataset, IrisDataset, DatasetSubset
 import torch
 from torch import randperm
 from torch.utils.data import DataLoader
-from typing import Optional
+from typing import List, Optional, Tuple
 
 import pytorch_lightning as pl
+
+__all__ = ['IrisDataModule']
 
 class IrisDataModule(pl.LightningDataModule):
     def __init__(
             self,
-            data_dir: str,
-            subsets: list,
-            predic_data_dir: str,
-            auto_crop: bool = True,
-            unwrap: bool = False,
-            shuffle: bool = True,
-            batch_size: int = 32,
-            num_workers: int = 4,
-            train_transform = None,
-            val_transform = None,
-            test_transform = None,
-            predict_transform = None,
-            traint_val_test_split = (0.75,0.2,0.05)
+            root_dir: str,
+            batch_size: int,
+            num_workers: int,
+            train_pseudolabels: Optional[str] = None,
+            train_subset: Optional[list] = None,
+            auto_crop: Optional[bool] = True,
+            unwrap: Optional[bool] = False,
+            shuffle: Optional[bool] = True,
+            train_transform: Optional[torch.nn.Module] = None,
+            val_transform: Optional[torch.nn.Module] = None,
+            test_transform: Optional[torch.nn.Module] = None,
+            predict_transform: Optional[torch.nn.Module] = None,
+            traint_val_test_split: Optional[Tuple[float, float, float]] = (0.75,0.2,0.05)
         ):
         super().__init__()
         assert len(traint_val_test_split) == 3, "Train val test split tuple must contain 3 elements"
         assert all(map(lambda x: type(x) == float, traint_val_test_split)), "Train val test split tuple must be tuple of floats between 0 and 1"
-        self.data_dir = data_dir
-        self.predict_data_dir = predic_data_dir
+        self.root_dir = root_dir
+        self.batch_size = batch_size
+        self.num_workers = num_workers
+        
+        if not train_pseudolabels is None:
+            with open(os.path.join(self.root_dir, train_pseudolabels)) as f:
+                self.train_pseudolabels = pickle.load(f)
+        else:
+            self.train_pseudolabels = None
+
+        if train_subset is None:
+            self.train_subset = self.list_train_sets(self.root_dir)
+        else:
+            self.train_subset = tuple(train_subset)
+
         self.auto_crop = auto_crop
         self.unwrap = unwrap
         self.shuffle = shuffle
-        self.batch_size = batch_size
-        self.num_workers = num_workers
         self.train_transform = train_transform
         self.val_transform = val_transform
         self.test_transform = test_transform
         self.predict_transform = predict_transform
         self.traint_val_test_split = traint_val_test_split
+
+
         self.iris_full = IrisDataset(
-            self.data_dir,
-            subsets,
+            self.root_dir,
+            self.train_subset,
+            pseudolabels=self.train_pseudolabels,
             autocrop=self.auto_crop,
             unwrap=self.unwrap
         )
-        self.iris_predict = IrisVerificationDataset(
-            self.predict_data_dir,
+
+        self.iris_predict = dict([
+            (
+                d,
+                IrisVerificationDataset(
+                    os.path.join(self.root_dir, d),
+                    transform=self.predict_transform,
+                    autocrop=self.auto_crop,
+                    unwrap=self.unwrap
+                )
+            ) for d in self.list_verification_sets(self.root_dir)
+        ])
+
+        self.iris_predict["iris_verification_pseudo"] = IrisVerificationDataset(
+            self.root_dir,
             transform=self.predict_transform,
             autocrop=self.auto_crop,
-            unwrap=self.unwrap
+            unwrap=self.unwrap,
+            train_subset=self.train_subset
         )
+
+        self.iris_predict_selector = list(self.iris_predict.keys())[0]
+    def iris_predict_select(self, key):
+        assert key in self.iris_predict_list, 'Selected dataset is not in predict list'
+        self.iris_predict_selector = key
+    @property
+    def iris_predict_list(self):
+        return tuple(self.iris_predict.keys())
+    @staticmethod
+    def list_train_sets(root_dir: str) -> List[str]:
+        return list(filter(
+            lambda s: s.startswith('train_iris_') and os.path.isdir(
+                os.path.join(root_dir, s)
+            ), os.listdir(root_dir)
+        ))
+    @staticmethod
+    def list_verification_sets(root_dir: str) -> List[str]:
+        return list(filter(
+            lambda s: s.startswith('iris_verification_') and os.path.isdir(
+                os.path.join(root_dir, s)
+            ), os.listdir(root_dir)
+        ))
     @property
     def num_classes(self):
         return self.iris_full.num_classes
@@ -89,7 +143,7 @@ class IrisDataModule(pl.LightningDataModule):
         )
     def predict_dataloader(self):
         return DataLoader(
-            self.iris_predict,
+            self.iris_predict[self.iris_predict_selector],
             batch_size=self.batch_size,
             num_workers=self.num_workers,
             persistent_workers=True
