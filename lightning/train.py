@@ -56,7 +56,7 @@ def save_labeled_results(results, root_dir, run_name, dataset_name):
 
         data = dict(zip(results["label"], results[field_name]))
         pickle_file_path = os.path.join(
-            root_dir, f"{field_name}-{run_name}-{dataset_name}"
+            root_dir, f"{field_name}-{run_name}-{dataset_name}.pickle"
         )
         with open(pickle_file_path, "wb") as f:
             pickle.dump(data, f)
@@ -65,7 +65,7 @@ def save_unlabeled_results(results, root_dir, run_name, dataset_name):
     for field_name in results:
         data = results[field_name]
         pickle_file_path = os.path.join(
-            root_dir, f"{field_name}-{run_name}-{dataset_name}"
+            root_dir, f"{field_name}-{run_name}-{dataset_name}.pickle"
         )
         with open(pickle_file_path, "wb") as f:
             pickle.dump(data, f)
