@@ -441,7 +441,8 @@ class IrisDataset(IrisDatasetBase):
         transform: Optional[Callable] = None,
     ) -> None:
         super(IrisDataset, self).__init__(
-            root, autocrop, unwrap, transform
+            root=root, autocrop=autocrop, 
+            unwrap=unwrap, transform=transform
         )
         assert type(root) == str,\
             "Parameter root can must be string"
@@ -561,7 +562,8 @@ class IrisVerificationDatasetPseudo(IrisDataset):
         transform: Optional[Callable] = None,
     ) -> None:
         super(IrisVerificationDatasetPseudo, self).__init__(
-            root, subsets, pseudolabels, autocrop, unwrap, transform,
+            root=root, subsets=subsets, pseudolabels=pseudolabels, 
+            autocrop=autocrop, unwrap=unwrap, transform=transform,
         )
     def get_img_label(self, index: int) -> str:
         return self.get_img_annotation(index)['__image_id']
