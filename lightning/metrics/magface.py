@@ -1,15 +1,12 @@
 #!/usr/bin/env python
 import sys
 sys.path.append("..")
-from collections import OrderedDict
 from torch.nn import Parameter
 import torch.nn.functional as F
-import torch.backends.cudnn as cudnn
 import numpy as np
 import math
 import torch
 import torch.nn as nn
-import os
 
 class MagFaceLoss(nn.Module):
     def __init__(
