@@ -2,7 +2,6 @@
 import sys
 sys.path.append("..")
 from collections import OrderedDict
-from termcolor import cprint
 from torch.nn import Parameter
 import torch.nn.functional as F
 import torch.backends.cudnn as cudnn

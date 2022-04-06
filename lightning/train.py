@@ -7,10 +7,8 @@ import pytorch_lightning as pl
 import torch
 from torchvision import transforms
 from dataset import *
-from evaluation import pairs_impostor_scores
 import models
-from pytorch_lightning.loggers import WandbLogger, TensorBoardLogger, CSVLogger
-import matplotlib.pyplot as plt
+from pytorch_lightning.loggers import WandbLogger, CSVLogger
 
 def name_gen(timestamp: int):
     available_chars=[

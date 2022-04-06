@@ -1,3 +1,4 @@
+from typing import Optional
 from torchvision import transforms
 import torch
 import torch.nn as nn
@@ -27,13 +28,16 @@ class CrFiqaNet(pl.LightningModule):
         optim:str,
         optim_args:dict,
         lr_scheduler:str,
-        lr_scheduler_args:dict
+        lr_scheduler_args:dict,
+        backbone_checkpoint_path:Optional[str]=None,
     ):
         super().__init__()
         assert metric == "CrFiqaLoss", "Cannot use other loss than CrFiqa"
         assert backbone in available_backbones, f"{backbone} is not valid\
              backbone, Available backbones are {' '.join(available_backbones)}"
         self.encoder = backbones.__dict__[backbone](**backbone_args)
+        if not backbone_checkpoint_path is None:
+            self.encoder.load_state_dict(torch.load(backbone_checkpoint_path))
         self.secondary = torch.nn.Linear(
             metric_args["in_features"], 
             1
