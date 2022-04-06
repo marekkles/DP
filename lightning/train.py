@@ -69,47 +69,12 @@ def save_unlabeled_results(results, root_dir, run_name, dataset_name):
         with open(pickle_file_path, "wb") as f:
             pickle.dump(data, f)
 
-def main(args, mode):
-    
-    #transforms
-    #train transforms
-    train_transform=transforms.Compose([
-        transforms.ConvertImageDtype(torch.float),
-        transforms.RandomAffine(**args["train_transform"]["RandomAffine"]),
-        transforms.Resize(**args["train_transform"]["Resize"]),
-        transforms.RandomAdjustSharpness(
-            **args["train_transform"]["RandomAdjustSharpness"]
-        ),
-        transforms.RandomAutocontrast(
-            **args["train_transform"]["RandomAutocontrast"]
-        ),
-        transforms.RandomInvert(**args["train_transform"]["RandomInvert"]),
-        transforms.Normalize(**args["train_transform"]["Normalize"]),
-        transforms.RandomErasing(**args["train_transform"]["RandomErasing"]),
-    ])
-    #val transforms
-    val_transform=transforms.Compose([
-        transforms.Resize(**args["val_transform"]["Resize"]),
-        transforms.ConvertImageDtype(torch.float),
-        transforms.Normalize(**args["val_transform"]["Normalize"]),
-    ])
-    #test transforms
-    test_transform=transforms.Compose([
-        transforms.Resize(**args["test_transform"]["Resize"]),
-        transforms.ConvertImageDtype(torch.float),
-        transforms.Normalize(**args["test_transform"]["Normalize"]),
-    ])
-    #predict transforms 
-    predict_transform=transforms.Compose([
-        transforms.Resize(**args["predict_transform"]["Resize"]),
-        transforms.ConvertImageDtype(torch.float),
-        transforms.Normalize(**args["predict_transform"]["Normalize"]),
-    ])
-    #logger
+def main(args, mode):    
     loggers = [
         CSVLogger(save_dir=args["run_root_dir"], 
                   name=None, version='csvs'),
     ]
+    
     if args['use_wandb'] and (mode == "train" or mode == "train+evaluate+export"):
         print(f"Using Weights&Biases under project {args['project_name']} ")
         loggers.append(
@@ -119,7 +84,7 @@ def main(args, mode):
                 project=args["project_name"]
             )
         )
-    #callbacks
+        
     callbacks = [
         pl.callbacks.model_checkpoint.ModelCheckpoint(
             dirpath=os.path.join(args["run_root_dir"], "checkpoints"),
@@ -129,9 +94,7 @@ def main(args, mode):
             mode='min',
             auto_insert_metric_name=True,
             filename='checkpoint-{epoch}-{val_loss:.2f}'
-        ),
-        #pl.callbacks.EarlyStopping(monitor="val_loss"),
-        #pl.callbacks.DeviceStatsMonitor(),
+        )
     ]
     # data
     data_loader = IrisDataModule(
@@ -143,10 +106,10 @@ def main(args, mode):
         auto_crop=args["auto_crop"],
         unwrap=args["unwrap"],
         shuffle=args["shuffle"],
-        train_transform=train_transform,
-        val_transform=val_transform,
-        test_transform=test_transform,
-        predict_transform=predict_transform,
+        train_transform=train_transform(**args["train_transform"]),
+        val_transform=val_transform(**args["val_transform"]),
+        test_transform=test_transform(**args["test_transform"]),
+        predict_transform=predict_transform(**args["predict_transform"]),
     )
     
     if "resume_checkpoint" in args:

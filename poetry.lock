@@ -288,6 +288,36 @@ diskcache = ["diskcache (>=5.2.1)", "multiprocess (>=0.70.12)", "psutil (>=5.8.0
 testing = ["beautifulsoup4 (>=4.8.2)", "lxml (>=4.6.2)", "percy (>=2.0.2)", "pytest (>=6.0.2)", "requests[security] (>=2.21.0)", "selenium (>=3.141.0)", "waitress (>=1.4.4)", "cryptography (<3.4)"]
 
 [[package]]
+name = "dash-bootstrap-components"
+version = "1.1.0"
+description = "Bootstrap themed components for use in Plotly Dash"
+category = "main"
+optional = false
+python-versions = ">=3.6, <4"
+
+[package.dependencies]
+dash = ">=2.0.0"
+
+[package.extras]
+pandas = ["numpy", "pandas"]
+
+[[package]]
+name = "dash-bootstrap-templates"
+version = "1.0.5"
+description = "A collection of Plotly figure templates with a Bootstrap theme"
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+dash = "*"
+dash-bootstrap-components = ">=1.0.0"
+numpy = "*"
+
+[package.extras]
+dev = ["tinycss2", "spectra"]
+
+[[package]]
 name = "dash-core-components"
 version = "2.0.0"
 description = "Core component suite for Dash"
@@ -1908,8 +1938,8 @@ multidict = ">=4.0"
 
 [metadata]
 lock-version = "1.1"
-python-versions = "3.10"
-content-hash = "650ad8b27dc7a7801d9bed97d603e2c6848bee5fdf6c5deb0c0677a5d2dce848"
+python-versions = "3.10.*"
+content-hash = "dbc747f21f7bd6c47ab11b57a37f87ea8f20479bfc1c7d7bd27df229b0379f8a"
 
 [metadata.files]
 absl-py = [
@@ -2204,6 +2234,14 @@ cycler = [
 dash = [
     {file = "dash-2.3.1-py3-none-any.whl", hash = "sha256:fff9701bb35ae597f7117c83404b6f6de37dce843d775efa385b09584534d368"},
     {file = "dash-2.3.1.tar.gz", hash = "sha256:07f59e2ebec62c9123a8d8ccfd9c57c73095080b5cbfb3bb44f27ce0b228b4ef"},
+]
+dash-bootstrap-components = [
+    {file = "dash-bootstrap-components-1.1.0.tar.gz", hash = "sha256:340755d3ca4d2e5b2745fc67398785e673092faef2097e2895f8580b1ad1816e"},
+    {file = "dash_bootstrap_components-1.1.0-py3-none-any.whl", hash = "sha256:e0490bf865c61f14371e537bdab4be08db693cec01884eb5a9c55489ebd13d47"},
+]
+dash-bootstrap-templates = [
+    {file = "dash-bootstrap-templates-1.0.5.tar.gz", hash = "sha256:77c16fc34e589e4f922dc7206199545cb7228f3903fc8598b5e9ee8a0991738e"},
+    {file = "dash_bootstrap_templates-1.0.5-py3-none-any.whl", hash = "sha256:625dd9a8754a849b97bd11b5eb5cb66df917002149d941d47a49fb81689efa9c"},
 ]
 dash-core-components = [
     {file = "dash_core_components-2.0.0-py3-none-any.whl", hash = "sha256:52b8e8cce13b18d0802ee3acbc5e888cb1248a04968f962d63d070400af2e346"},
