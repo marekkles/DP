@@ -1,3 +1,4 @@
+import numpy as np
 import plotly as py
 import plotly.graph_objects as go
 import plotly.express as px
@@ -63,6 +64,8 @@ def plotly_recognition_performance(fmr, fnmr, treashold, y_true, y_score):
     return fig
 
 def plotly_quality_performance(irr, fnmr, dets):
+    irr=np.array(irr)
+    fnmr=np.array(fnmr)
     fig = py.subplots.make_subplots(rows=1, cols=2)
     for d in dets:
         fig.add_trace(plotly_det_scatter(dets[d][0], dets[d][1],
@@ -71,5 +74,6 @@ def plotly_quality_performance(irr, fnmr, dets):
     plotly_set_det_plot(fig, row=1, col=2)
     fig.add_trace(go.Scatter(
         name=f"False match rate {0.01:.0%}",
-        x=irr, y=fnmr, hovertemplate="IRR: %{x:0.3f} FNMR: %{x:0.3f}"),row=1, col=1)
+        x=irr*100, y=fnmr*100, hovertemplate="IRR: %{x:0.3f}% FNMR: %{x:0.3f}%"),row=1, col=1)
+
     return fig
