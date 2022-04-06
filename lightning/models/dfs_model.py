@@ -6,6 +6,7 @@ from torch.nn import init
 import torch.nn.functional as F
 import torchvision
 import pytorch_lightning as pl
+import matplotlib.pyplot as plt
 
 __all__ = ['DfsNet']
 
@@ -135,14 +136,19 @@ class DfsNet(pl.LightningModule):
     ):
         super().__init__()
         self.mobilenet_checkpoint = mobilenet_checkpoint
+        self.mobilenet_state_dict = torch.load(
+            self.mobilenet_checkpoint, 
+            map_location=torch.device('cpu')
+        )
         self.mobilenet = MobileNetV2_Lite()
-        self.mobilenet.load_state_dict(torch.load(self.mobilenet_checkpoint))
+        self.mobilenet.load_state_dict(self.mobilenet_state_dict['model'])
+
         self.save_hyperparameters()
     def forward(self, x):
         pred, out_mask = self.mobilenet(x)
         return pred, out_mask
     def predict_step(self, batch, batch_idx):
         x, y = batch
-        quality, mask = self(x)
-        return  {"quality" : quality, "mask" : mask, "label": y}
+        quality, _ = self(x)
+        return  {"quality" : quality, "label": y}
 

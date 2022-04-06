@@ -10,7 +10,8 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            "args": ["--resume-dir", "runs/RecognitionNet-magiresnet50-ArcFaceLoss-arzKXb", "--mode", "evaluate"],
+            //"args": ["--resume-dir", "runs/RecognitionNet-magiresnet50-ArcFaceLoss-arzKXb", "--mode", "evaluate"],
+            "args": ["--args-path", "args_dfs.yaml", "--mode", "evaluate"],
             "justMyCode": true
         }
     ]

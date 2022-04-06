@@ -10,6 +10,7 @@ from dataset import *
 from evaluation import pairs_impostor_scores
 import models
 from pytorch_lightning.loggers import WandbLogger, TensorBoardLogger, CSVLogger
+import matplotlib.pyplot as plt
 
 def name_gen(timestamp: int):
     available_chars=[
@@ -139,6 +140,7 @@ def main(args, mode):
         root_dir=args["dataset_root"],
         batch_size=args["batch_size"],
         num_workers=args["num_workers"],
+        num_in_channels=args["num_in_channels"],
         train_subset=args["dataset_subsets"],
         auto_crop=args["auto_crop"],
         unwrap=args["unwrap"],
@@ -271,14 +273,14 @@ if __name__ == "__main__":
             args_file["run_root_dir"] = args_program.resume_dir
     else:
         with open(args_program.args_path, 'r') as f:
-            args_file = yaml.load(f,yaml.FullLoader)
+            args_file = yaml.load(f, yaml.FullLoader)
         
-        args_file["run_name"] = '{}-{}'.format(
-            args_file['model'],
-            args_file['model_args']['backbone'])
+        args_file["run_name"] = args_file['model']
+        if 'backbone' in args_file['model_args']:
+            args_file["run_name"] += '-' + args_file['model_args']['backbone']
         if 'metric' in args_file['model_args']:
-            args_file["run_name"] += '-{}'.format(args_file['model_args']['metric'])
-        args_file["run_name"] += '-{}'.format(name_gen(time.time_ns()//1_000_000_000))
+            args_file["run_name"] += '-' + args_file['model_args']['metric']
+        args_file["run_name"] += '-' + name_gen(time.time_ns()//1_000_000_000)
 
         args_file["run_root_dir"] = os.path.join(
             args_file["root_dir"], args_file["run_name"]

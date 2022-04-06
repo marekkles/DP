@@ -15,8 +15,8 @@ from torchvision.datasets.vision import VisionDataset
 from PIL import Image
 
 __all__ = [
-    'IrisDatasetBase', 'IrisVerificationDataset', 
-    'IrisVerificationDatasetV2', 'IrisVerificationDatasetV1', 
+    'IrisDatasetBase', 'verification_dataset_factory',
+    'IrisVerificationDatasetV2', 'IrisVerificationDatasetV1',
     'IrisVerificationDatasetPseudo', 'IrisDataset', 'DatasetSubset'
 ]
 
@@ -30,9 +30,10 @@ class IrisDatasetBase(VisionDataset):
     def __init__(
         self,
         root: str,
-        autocrop: bool,
-        unwrap: bool,
-        transform: torch.nn.Module,
+        num_in_channels: int,*,
+        autocrop: Optional[bool] = True,
+        unwrap: Optional[bool] = False,
+        transform: Optional[Callable] = None,
     ) -> None:
         """Initialize base class 
 
@@ -43,6 +44,7 @@ class IrisDatasetBase(VisionDataset):
             transform (torch.Module): Transforms to be applied
         """
         super(IrisDatasetBase, self).__init__(root, transform=transform)
+        self.num_in_channels = num_in_channels
         self.autocrop = autocrop
         self.unwrap = unwrap
     # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -139,6 +141,7 @@ class IrisDatasetBase(VisionDataset):
         label = self.get_img_label(index)
         if self.transform is not None:
             img = self.transform(img)
+        img = img.repeat(self.num_in_channels, 1, 1)
         return img, label
     def __len__(self) -> int:
         """Get length of the dataset
@@ -204,47 +207,7 @@ class IrisDatasetBase(VisionDataset):
             pos_y + radius_1,
         ))
 
-class IrisVerificationDataset(IrisDatasetBase):
-    def __init__(
-        self, 
-        root: str,
-        autocrop: Optional[bool] = True,
-        unwrap: Optional[bool] = False,
-        transform: Optional[Callable] = None,
-        train_subset: Optional[List[str]] = None
-    ) -> None:
-        """Verification dataset which combines v1 and v2 ways of loading data
-
-        Args:
-            root (str): Root directory of the dataset
-            autocrop (bool, optional): Autocrop image. Defaults to True.
-            unwrap (bool, optional): Unwrap iris. Defaults to False.
-            transform (Callable, optional): Optional transforms. Defaults to None.
-            train_sets (List[str], optional): Specify pseudo verification set.
-
-        Raises:
-            ValueError: If root directory does not contain valid structure.
-        """
-        super(IrisVerificationDataset, self).__init__(
-            root, autocrop, unwrap, transform
-        )
-        self.dataset: IrisDatasetBase = None
-        if train_subset is None:
-            if self.is_v1(root):
-                self.dataset = IrisVerificationDatasetV1(
-                    root, autocrop, unwrap, transform
-                )
-            elif self.is_v2(root):
-                self.dataset = IrisVerificationDatasetV2(
-                    root, autocrop, unwrap, transform
-                )
-            else:
-                raise ValueError
-        else:
-            self.dataset = IrisVerificationDatasetPseudo(
-                root, train_subset, autocrop, unwrap, transform
-            )
-    @staticmethod
+def verification_dataset_factory(root, num_in_channels, subset=None, **kwargs) -> IrisDatasetBase:
     def is_v1(root: str):
         val = True
         val = val and os.path.exists(os.path.join(root, 'annotations.csv'))
@@ -252,43 +215,42 @@ class IrisVerificationDataset(IrisDatasetBase):
         val = val and os.path.exists(os.path.join(root, 'pairs.csv'))
         val = val and os.path.exists(os.path.join(root, 'impostors.csv'))
         return val
-    @staticmethod
     def is_v2(root: str):
         val = True
         val = val and os.path.exists(os.path.join(root, 'labels.csv'))
         val = val and os.path.exists(os.path.join(root, 'pairs.csv'))
         val = val and os.path.exists(os.path.join(root, 'images'))
         return val
-    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-    # # # # # # # # #  OVERRIDDEN METHODS   # # # # # # # # # # # # # #
-    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-    @property
-    def size(self):
-        return self.dataset.size
-    @property
-    def pairs(self):
-        return self.dataset.pairs
-    @property
-    def impostors(self):
-        return self.dataset.impostors
-    def get_img_annotation(self, index: int) -> dict:
-        return self.dataset.get_img_annotation(index)
-    def get_img_label(self, index: int) -> str:
-        return self.dataset.get_img_label(index)
-    def get_img_binary(self, index: int) -> bytes:
-        return self.dataset.get_img_binary(index)
-
+    def is_pseudo(root: str, subset):
+        return not subset is None
+    if is_v1(root):
+        class_ref = IrisVerificationDatasetV1(
+            root, num_in_channels, **kwargs
+        )
+    elif is_v2(root):
+        class_ref = IrisVerificationDatasetV2(
+            root, num_in_channels, **kwargs
+        )
+    elif is_pseudo(root, subset):
+        class_ref = IrisVerificationDatasetPseudo(
+            root, num_in_channels, subset, **kwargs
+        )
+    else:
+        raise ValueError("Unknown dataset options for factory")
+    return class_ref
 
 class IrisVerificationDatasetV2(IrisDatasetBase):
     def __init__(
         self, 
         root: str,
+        num_in_channels: int,*,
         autocrop: bool = True,
         unwrap: bool = False,
         transform: Optional[Callable] = None
     ) -> None:
         super(IrisVerificationDatasetV2, self).__init__(
-            root, autocrop, unwrap, transform
+            root, num_in_channels, 
+            autocrop=autocrop, unwrap=unwrap, transform=transform
         )
         self.__load_subset()
     # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -348,12 +310,14 @@ class IrisVerificationDatasetV1(IrisDatasetBase):
     def __init__(
         self, 
         root: str,
+        num_in_channels: int,*,
         autocrop: bool = True,
         unwrap: bool = False,
         transform: Optional[Callable] = None
     ) -> None:
         super(IrisVerificationDatasetV1, self).__init__(
-            root, autocrop, unwrap, transform
+            root, num_in_channels, 
+            autocrop=autocrop, unwrap=unwrap, transform=transform
         )
         self.__load_subset()
     # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -433,7 +397,8 @@ class IrisDataset(IrisDatasetBase):
     def __init__(
         self, 
         root: str,
-        subsets: list,
+        num_in_channels: int,
+        subsets: list,*,
         pseudolabels: Optional[dict] = None,
         class_group_size: Optional[int] = 4,
         autocrop: Optional[bool] = True,
@@ -441,8 +406,8 @@ class IrisDataset(IrisDatasetBase):
         transform: Optional[Callable] = None,
     ) -> None:
         super(IrisDataset, self).__init__(
-            root=root, autocrop=autocrop, 
-            unwrap=unwrap, transform=transform
+            root, num_in_channels,
+            autocrop=autocrop, unwrap=unwrap, transform=transform
         )
         assert type(root) == str,\
             "Parameter root can must be string"
@@ -555,15 +520,17 @@ class IrisVerificationDatasetPseudo(IrisDataset):
     def __init__(
         self, 
         root: str,
-        subsets: list,
+        num_in_channels: int,
+        subsets: list,*,
         pseudolabels: Optional[dict] = None,
         autocrop: Optional[bool] = True,
         unwrap: Optional[bool] = False,
         transform: Optional[Callable] = None,
     ) -> None:
         super(IrisVerificationDatasetPseudo, self).__init__(
-            root=root, subsets=subsets, pseudolabels=pseudolabels, 
-            autocrop=autocrop, unwrap=unwrap, transform=transform,
+            root, num_in_channels, subsets, 
+            pseudolabels=pseudolabels, autocrop=autocrop, 
+            unwrap=unwrap, transform=transform,
         )
     def get_img_label(self, index: int) -> str:
         return self.get_img_annotation(index)['__image_id']

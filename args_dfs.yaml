@@ -1,0 +1,116 @@
+#Root directory of stored models
+root_dir: runs
+
+#Weights and Biases config
+use_wandb: False
+project_name: dp-debug
+log_steps: 10
+
+#Paralelization options
+accelerator: cpu
+devices: 1
+num_nodes: 1
+grad_batches: 4
+num_in_channels: 3
+
+#Datasets in use
+dataset_root: ../Datasets/
+#Dataset for training
+dataset_subsets:
+- train_iris_casia_v4
+# Full set:
+#- train_iris_nd_crosssensor_2013
+#- train_iris_casia_v4
+#- train_iris_nd_0405
+#- train_iris_utris_v1
+#Dataset for predictions
+
+#Training specific options
+batch_size: 16
+max_epochs: 120
+num_workers: 4
+
+auto_crop: True
+unwrap: False
+shuffle: False
+
+#Configure model for training
+model: DfsNet
+model_args:
+    #Backbone convolutionsal network config
+    mobilenet_checkpoint: lightning/pretrainied/1203_202301_MobileNetV2_Lite_CX1.pth
+
+#Transform config for training
+train_transform:
+    Normalize:
+        mean:
+        - 0.480
+        std:
+        - 0.200
+    RandomAdjustSharpness:
+        p: 0
+        sharpness_factor: 3
+    RandomAffine:
+        degrees: 0
+        fill: 0
+        scale:
+        - 1
+        - 1
+        shear: 0
+        translate:
+        - 0
+        - 0
+    RandomAutocontrast:
+        p: 0
+    RandomErasing:
+        inplace: false
+        p: 0
+        ratio:
+        - 0.3
+        - 3.3
+        scale:
+        - 0.02
+        - 0.33
+        value: 0
+    RandomInvert:
+        p: 0
+    Resize:
+        size:
+        - 224
+        - 224
+
+#Transform config for testing
+test_transform:
+    Normalize:
+        mean:
+        - 0.480
+        std:
+        - 0.200
+    Resize:
+        size:
+        - 224
+        - 224
+
+#Transform config for validation
+val_transform:
+    Normalize:
+        mean:
+        - 0.480
+        std:
+        - 0.200
+    Resize:
+        size:
+        - 224
+        - 224
+
+#Transform config for prediction
+predict_transform:
+    Normalize:
+        mean:
+        - 0.480
+        std:
+        - 0.200
+    Resize:
+        size:
+        - 224
+        - 224

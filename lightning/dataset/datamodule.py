@@ -1,6 +1,6 @@
 import os
 import pickle
-from .iris_dataset import IrisVerificationDataset, IrisDataset, DatasetSubset
+from .iris_dataset import verification_dataset_factory, IrisDataset, DatasetSubset
 import torch
 from torch import randperm
 from torch.utils.data import DataLoader
@@ -16,6 +16,7 @@ class IrisDataModule(pl.LightningDataModule):
             root_dir: str,
             batch_size: int,
             num_workers: int,
+            num_in_channels: int,
             train_pseudolabels: Optional[str] = None,
             train_subset: Optional[list] = None,
             auto_crop: Optional[bool] = True,
@@ -33,6 +34,7 @@ class IrisDataModule(pl.LightningDataModule):
         self.root_dir = root_dir
         self.batch_size = batch_size
         self.num_workers = num_workers
+        self.num_in_channels = num_in_channels
         
         if not train_pseudolabels is None:
             with open(os.path.join(self.root_dir, train_pseudolabels)) as f:
@@ -57,6 +59,7 @@ class IrisDataModule(pl.LightningDataModule):
 
         self.iris_full = IrisDataset(
             self.root_dir,
+            self.num_in_channels,
             self.train_subset,
             pseudolabels=self.train_pseudolabels,
             autocrop=self.auto_crop,
@@ -66,8 +69,9 @@ class IrisDataModule(pl.LightningDataModule):
         self.iris_predict = dict([
             (
                 d,
-                IrisVerificationDataset(
+                verification_dataset_factory(
                     os.path.join(self.root_dir, d),
+                    self.num_in_channels,
                     transform=self.predict_transform,
                     autocrop=self.auto_crop,
                     unwrap=self.unwrap
@@ -75,12 +79,13 @@ class IrisDataModule(pl.LightningDataModule):
             ) for d in self.list_verification_sets(self.root_dir)
         ])
 
-        self.iris_predict["iris_verification_pseudo"] = IrisVerificationDataset(
+        self.iris_predict["iris_verification_pseudo"] = verification_dataset_factory(
             self.root_dir,
+            self.num_in_channels,
+            subset=self.train_subset,
             transform=self.predict_transform,
             autocrop=self.auto_crop,
             unwrap=self.unwrap,
-            train_subset=self.train_subset
         )
 
         self.iris_predict_selector = list(self.iris_predict.keys())[0]
