@@ -1,4 +1,5 @@
 *.pth
+datasets/
 wandb/
 runs/
 args/

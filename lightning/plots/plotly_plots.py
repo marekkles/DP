@@ -74,6 +74,6 @@ def plotly_quality_performance(irr, fnmr, dets):
     plotly_set_det_plot(fig, row=1, col=2)
     fig.add_trace(go.Scatter(
         name=f"False match rate {0.01:.0%}",
-        x=irr*100, y=fnmr*100, hovertemplate="IRR: %{x:0.3f}% FNMR: %{x:0.3f}%"),row=1, col=1)
+        x=irr*100, y=fnmr*100, hovertemplate="IRR: %{x:0.3f}% FNMR: %{y:0.3f}%"),row=1, col=1)
 
     return fig
