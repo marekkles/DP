@@ -1,4 +1,3 @@
-*.pth
 datasets/
 wandb/
 runs/
