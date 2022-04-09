@@ -118,7 +118,7 @@ class IrisDataModule(pl.LightningDataModule):
         if self.shuffle:
             perms = randperm(sum(lengths)).tolist()
         else:
-            perms = torch.range(0, sum(lengths), dtype=torch.int32).tolist()
+            perms = torch.arange(0, sum(lengths), 1, dtype=torch.int32).tolist()
         aggs = [sum(lengths[:0]), sum(lengths[:1]), sum(lengths[:2]), sum(lengths[:3])]
         subsets = [perms[start:end] for start, end in zip(aggs[:-1], aggs[1:])]
         
