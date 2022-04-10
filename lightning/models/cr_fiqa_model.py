@@ -37,6 +37,7 @@ class CrFiqaNet(pl.LightningModule):
              backbone, Available backbones are {' '.join(available_backbones)}"
         self.encoder = backbones.__dict__[backbone](**backbone_args)
         if not backbone_checkpoint_path is None:
+            print(f"Loading CR-FIQA model from checkpoint: {backbone_checkpoint_path}")
             self.encoder.load_state_dict(torch.load(backbone_checkpoint_path))
         self.secondary = torch.nn.Linear(
             metric_args["in_features"], 

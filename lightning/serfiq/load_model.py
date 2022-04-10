@@ -20,10 +20,10 @@ def load_model(run_root: str) -> torch.nn.Module:
     Returns:
         torch.nn.Module: Model
     """
-    bakbone_path = os.path.join(run_root,"backbone.pth")
     args_path = os.path.join(run_root,"args.yaml")
     with open(args_path, "r") as f:
         args_file = yaml.load(f)
+    bakbone_path = os.path.join(run_root,f"encoder-{args_file['run_name']}.pth")
     model = backbones.__dict__[args_file["backbone"]](**args_file["backbone_args"])
     model.load_state_dict(bakbone_path)
-    return model
+    return model, args_file
