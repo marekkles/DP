@@ -13,6 +13,16 @@
             //"args": ["--resume-dir", "runs/RecognitionNet-magiresnet50-ArcFaceLoss-arzKXb", "--mode", "evaluate"],
             "args": ["--args-path", "args_dfs.yaml", "--mode", "evaluate"],
             "justMyCode": true
+        },
+        {
+            "name": "Python: Current File SER-FIQ",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            //"args": ["--resume-dir", "runs/RecognitionNet-magiresnet50-ArcFaceLoss-arzKXb", "--mode", "evaluate"],
+            "args": ["--run-root", "runs/RecognitionNet-magiresnet50-ArcFaceLoss-arzKXb", "--dataset-root", "../Datasets", "--device", "cpu"],
+            "justMyCode": true
         }
     ]
 }
