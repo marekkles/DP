@@ -1,0 +1,141 @@
+num_in_channels: 1
+#Root directory of stored models
+root_dir: Runs
+
+#Weights and Biases config
+use_wandb: False
+project_name: dp-debug
+log_steps: 8
+
+#Paralelization options
+accelerator: cpu
+devices: 1
+num_nodes: 1
+grad_batches: 16
+
+#Datasets in use
+dataset_root: ../Datasets/
+#Dataset for training
+dataset_subsets:
+#- train_iris_casia_v4
+# Full set:
+- train_iris_nd_crosssensor_2013
+- train_iris_casia_v4
+- train_iris_nd_0405
+- train_iris_utris_v1
+#Dataset for predictions
+
+train_pseudolabels: runs/RecognitionNet-magiresnet50-MagFaceLoss-JnGKXb/pseudolabels-RecognitionNet-magiresnet50-MagFaceLoss-JnGKXb.pickle
+
+#Training specific options
+batch_size: 32
+max_epochs: 100
+num_workers: 8
+
+auto_crop: True
+unwrap: False
+shuffle: True
+
+#Configure model for training
+model: SddFiqaNet
+model_args:
+    #Backbone convolutionsal network config
+    backbone: iresnet50
+    backbone_args:
+        dropout_prob0: 0.5
+        in_channels: 1
+    #backbone_checkpoint_path: Runs/RecognitionNet-magiresnet50-ArcFaceLoss-arzKXb/encoder-RecognitionNet-magiresnet50-ArcFaceLoss-arzKXb.pickle
+    #Softmax metric configuration
+    #Options: ArcFaceLoss, CosFaceLoss, LinearLoss, PassthroughLoss, MagFaceLoss, CrFiqaLoss
+    loss: SmoothL1Loss
+    loss_args:
+    #Optimizer configuration 
+    optim: SGD
+    optim_args:
+        lr: 0.1
+        momentum: 0.9
+        weight_decay: 0.0001
+
+    #Learning rate schedule config
+    lr_scheduler: MultiStepLR
+    lr_scheduler_args:
+        gamma: 0.1
+        milestones:
+        - 30
+        - 45
+        - 65
+
+#Transform config for training
+train_transform:
+    Normalize:
+        mean:
+        - 0.5
+        std:
+        - 0.25
+    RandomAdjustSharpness:
+        p: 0.2
+        sharpness_factor: 3
+    RandomAffine:
+        degrees: 10
+        fill: 0
+        scale:
+        - 0.33
+        - 1.33
+        shear: 5
+        translate:
+        - 0.2
+        - 0.2
+    RandomAutocontrast:
+        p: 0
+    RandomErasing:
+        inplace: false
+        p: 0.2
+        ratio:
+        - 0.3
+        - 3.3
+        scale:
+        - 0.02
+        - 0.33
+        value: 0
+    RandomInvert:
+        p: 0
+    Resize:
+        size:
+        - 224
+        - 224
+
+#Transform config for testing
+test_transform:
+    Normalize:
+        mean:
+        - 0.5
+        std:
+        - 0.25
+    Resize:
+        size:
+        - 224
+        - 224
+
+#Transform config for validation
+val_transform:
+    Normalize:
+        mean:
+        - 0.5
+        std:
+        - 0.25
+    Resize:
+        size:
+        - 224
+        - 224
+
+#Transform config for prediction
+predict_transform:
+    Normalize:
+        mean:
+        - 0.5
+        std:
+        - 0.25
+    Resize:
+        size:
+        - 224
+        - 224

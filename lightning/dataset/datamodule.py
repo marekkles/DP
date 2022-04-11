@@ -37,7 +37,7 @@ class IrisDataModule(pl.LightningDataModule):
         self.num_in_channels = num_in_channels
         
         if not train_pseudolabels is None:
-            with open(os.path.join(train_pseudolabels)) as f:
+            with open(os.path.join(train_pseudolabels), 'rb') as f:
                 self.train_pseudolabels = pickle.load(f)
         else:
             self.train_pseudolabels = None

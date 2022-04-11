@@ -65,18 +65,18 @@ class SddFiqaNet(pl.LightningModule):
     def training_step(self, train_batch, batch_idx):
         x, y = train_batch
         quality = self(x)
-        loss = self.loss(quality, y)
+        loss = self.loss(quality[:,0], y)
         self.log('train_loss', loss)
         return loss
     def validation_step(self, val_batch, batch_idx):
         x, y = val_batch
         quality = self(x)
-        loss = self.loss(quality, y)
+        loss = self.loss(quality[:,0], y)
         self.log('val_loss', loss)
     def test_step(self, test_batch, batch_idx):
         x, y = test_batch
         quality = self(x)
-        loss = self.loss(quality, y)
+        loss = self.loss(quality[:,0], y)
         self.log('test_loss', loss)
     def predict_step(self, batch, batch_idx):
         x, y = batch
