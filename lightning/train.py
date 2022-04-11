@@ -45,6 +45,7 @@ def main(args, mode):
         num_workers=args["num_workers"],
         num_in_channels=args["num_in_channels"],
         train_subset=args["dataset_subsets"],
+        train_pseudolabels=args["train_pseudolabels"] if "train_pseudolabels" in args else None,
         auto_crop=args["auto_crop"],
         unwrap=args["unwrap"],
         shuffle=args["shuffle"],
