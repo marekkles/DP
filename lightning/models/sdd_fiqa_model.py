@@ -5,6 +5,7 @@ import pytorch_lightning as pl
 import backbones
 import metrics
 import torchmetrics
+from typing import List, Tuple, Optional
 
 available_backbones = list(
     filter(
@@ -28,7 +29,8 @@ class SddFiqaNet(pl.LightningModule):
         optim:str,
         optim_args:dict,
         lr_scheduler:str,
-        lr_scheduler_args:dict
+        lr_scheduler_args:dict,
+        backbone_checkpoint_path:Optional[str]=None,
     ):
         super().__init__()
         assert backbone in available_backbones, f"{backbone} is not valid\
@@ -38,7 +40,9 @@ class SddFiqaNet(pl.LightningModule):
         self.encoder = backbones.__dict__[backbone](
             **backbone_args, num_classes=1
         )
-        self.loss = torch.nn.__dict__[loss](**loss_args)
+        if backbone_checkpoint_path is not None:
+            self.encoder.load_state_dict(torch.load(backbone_checkpoint_path))
+        self.loss = torch.nn.__dict__[loss](**(loss_args if loss_args != None else {}))
         self.optim = optim
         self.optim_args = optim_args
         self.lr_scheduler=lr_scheduler

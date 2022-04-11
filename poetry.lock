@@ -165,11 +165,11 @@ python-versions = "*"
 
 [[package]]
 name = "beautifulsoup4"
-version = "4.10.0"
+version = "4.11.1"
 description = "Screen-scraping library"
 category = "main"
 optional = false
-python-versions = ">3.0.0"
+python-versions = ">=3.6.0"
 
 [package.dependencies]
 soupsieve = ">1.2"
@@ -180,16 +180,19 @@ lxml = ["lxml"]
 
 [[package]]
 name = "bleach"
-version = "4.1.0"
+version = "5.0.0"
 description = "An easy safelist-based HTML-sanitizing tool."
 category = "main"
 optional = false
-python-versions = ">=3.6"
+python-versions = ">=3.7"
 
 [package.dependencies]
-packaging = "*"
 six = ">=1.9.0"
 webencodings = "*"
+
+[package.extras]
+css = ["tinycss2 (>=1.1.0)"]
+dev = ["pip-tools (==6.5.1)", "pytest (==7.1.1)", "flake8 (==4.0.1)", "tox (==3.24.5)", "sphinx (==4.3.2)", "twine (==4.0.0)", "wheel (==0.37.1)", "hashin (==0.17.0)", "black (==22.3.0)", "mypy (==0.942)"]
 
 [[package]]
 name = "brotli"
@@ -443,7 +446,7 @@ flask = "*"
 
 [[package]]
 name = "fonttools"
-version = "4.31.2"
+version = "4.32.0"
 description = "Tools to manipulate font files"
 category = "main"
 optional = false
@@ -529,7 +532,7 @@ gitdb = ">=4.0.1,<5"
 
 [[package]]
 name = "google-auth"
-version = "2.6.2"
+version = "2.6.3"
 description = "Google Authentication Library"
 category = "main"
 optional = false
@@ -585,7 +588,7 @@ python-versions = ">=3.5"
 
 [[package]]
 name = "ipykernel"
-version = "6.12.1"
+version = "6.13.0"
 description = "IPython Kernel for Jupyter"
 category = "main"
 optional = false
@@ -723,7 +726,7 @@ format_nongpl = ["fqdn", "idna", "isoduration", "jsonpointer (>1.13)", "rfc3339-
 
 [[package]]
 name = "jupyter-client"
-version = "7.2.1"
+version = "7.2.2"
 description = "Jupyter protocol implementation and client libraries"
 category = "main"
 optional = false
@@ -806,7 +809,7 @@ test = ["coverage", "pytest (>=6.0)", "pytest-cov", "pytest-mock", "pytest-timeo
 
 [[package]]
 name = "jupyterlab"
-version = "3.3.2"
+version = "3.3.3"
 description = "JupyterLab computational environment"
 category = "main"
 optional = false
@@ -823,19 +826,16 @@ packaging = "*"
 tornado = ">=6.1.0"
 
 [package.extras]
-test = ["coverage", "pytest (>=6.0)", "pytest-cov", "pytest-console-scripts", "pytest-check-links (>=0.5)", "jupyterlab-server[test] (>=2.2,<3.0)", "requests", "requests-cache", "virtualenv", "check-manifest"]
+test = ["coverage", "pytest (>=6.0)", "pytest-cov", "pytest-console-scripts", "pytest-check-links (>=0.5)", "jupyterlab-server", "requests", "requests-cache", "virtualenv", "check-manifest"]
 ui-tests = ["build"]
 
 [[package]]
 name = "jupyterlab-pygments"
-version = "0.1.2"
+version = "0.2.0"
 description = "Pygments theme using JupyterLab CSS variables"
 category = "main"
 optional = false
-python-versions = "*"
-
-[package.dependencies]
-pygments = ">=2.4.1,<3"
+python-versions = ">=3.7"
 
 [[package]]
 name = "jupyterlab-server"
@@ -968,7 +968,7 @@ test = ["ipython (<8.0.0)", "ipykernel", "ipywidgets (<8.0.0)", "pytest (>=4.1)"
 
 [[package]]
 name = "nbconvert"
-version = "6.4.5"
+version = "6.5.0"
 description = "Converting Jupyter Notebooks"
 category = "main"
 optional = false
@@ -979,23 +979,24 @@ beautifulsoup4 = "*"
 bleach = "*"
 defusedxml = "*"
 entrypoints = ">=0.2.2"
-jinja2 = ">=2.4"
-jupyter-core = "*"
+jinja2 = ">=3.0"
+jupyter-core = ">=4.7"
 jupyterlab-pygments = "*"
 MarkupSafe = ">=2.0"
 mistune = ">=0.8.1,<2"
-nbclient = ">=0.5.0,<0.6.0"
-nbformat = ">=4.4"
+nbclient = ">=0.5.0"
+nbformat = ">=5.1"
+packaging = "*"
 pandocfilters = ">=1.4.1"
 pygments = ">=2.4.1"
-testpath = "*"
+tinycss2 = "*"
 traitlets = ">=5.0"
 
 [package.extras]
-all = ["pytest", "pytest-cov", "pytest-dependency", "ipykernel", "ipywidgets (>=7)", "pyppeteer (>=1,<1.1)", "tornado (>=4.0)", "sphinx (>=1.5.1)", "sphinx-rtd-theme", "nbsphinx (>=0.2.12)", "ipython"]
+all = ["pytest", "pytest-cov", "pytest-dependency", "ipykernel", "ipywidgets (>=7)", "pre-commit", "pyppeteer (>=1,<1.1)", "tornado (>=6.1)", "sphinx (>=1.5.1)", "sphinx-rtd-theme", "nbsphinx (>=0.2.12)", "ipython"]
 docs = ["sphinx (>=1.5.1)", "sphinx-rtd-theme", "nbsphinx (>=0.2.12)", "ipython"]
-serve = ["tornado (>=4.0)"]
-test = ["pytest", "pytest-cov", "pytest-dependency", "ipykernel", "ipywidgets (>=7)", "pyppeteer (>=1,<1.1)"]
+serve = ["tornado (>=6.1)"]
+test = ["pytest", "pytest-cov", "pytest-dependency", "ipykernel", "ipywidgets (>=7)", "pre-commit", "pyppeteer (>=1,<1.1)"]
 webpdf = ["pyppeteer (>=1,<1.1)"]
 
 [[package]]
@@ -1188,7 +1189,7 @@ tenacity = ">=6.2.0"
 
 [[package]]
 name = "prometheus-client"
-version = "0.14.0"
+version = "0.14.1"
 description = "Python client for the Prometheus monitoring system."
 category = "main"
 optional = false
@@ -1313,14 +1314,14 @@ python-versions = ">=3.5"
 
 [[package]]
 name = "pyparsing"
-version = "3.0.7"
-description = "Python parsing module"
+version = "3.0.8"
+description = "pyparsing module - Classes and methods to define and execute parsing grammars"
 category = "main"
 optional = false
-python-versions = ">=3.6"
+python-versions = ">=3.6.8"
 
 [package.extras]
-diagrams = ["jinja2", "railroad-diagrams"]
+diagrams = ["railroad-diagrams", "jinja2"]
 
 [[package]]
 name = "pyrsistent"
@@ -1616,7 +1617,7 @@ python-versions = ">=3.5"
 
 [[package]]
 name = "soupsieve"
-version = "2.3.1"
+version = "2.3.2"
 description = "A modern CSS selector implementation for Beautiful Soup."
 category = "main"
 optional = false
@@ -1703,23 +1704,27 @@ tornado = ">=4"
 test = ["pytest"]
 
 [[package]]
-name = "testpath"
-version = "0.6.0"
-description = "Test utilities for code working with files and commands"
-category = "main"
-optional = false
-python-versions = ">= 3.5"
-
-[package.extras]
-test = ["pytest"]
-
-[[package]]
 name = "threadpoolctl"
 version = "3.1.0"
 description = "threadpoolctl"
 category = "main"
 optional = false
 python-versions = ">=3.6"
+
+[[package]]
+name = "tinycss2"
+version = "1.1.1"
+description = "A tiny CSS parser"
+category = "main"
+optional = false
+python-versions = ">=3.6"
+
+[package.dependencies]
+webencodings = ">=0.4"
+
+[package.extras]
+doc = ["sphinx", "sphinx-rtd-theme"]
+test = ["pytest", "pytest-cov", "pytest-flake8", "pytest-isort", "coverage"]
 
 [[package]]
 name = "tomli"
@@ -1852,7 +1857,7 @@ socks = ["PySocks (>=1.5.6,!=1.5.7,<2.0)"]
 
 [[package]]
 name = "wandb"
-version = "0.12.12"
+version = "0.12.14"
 description = "A CLI and library for interacting with the Weights and Biases API."
 category = "main"
 optional = false
@@ -2084,12 +2089,12 @@ backcall = [
     {file = "backcall-0.2.0.tar.gz", hash = "sha256:5cbdbf27be5e7cfadb448baf0aa95508f91f2bbc6c6437cd9cd06e2a4c215e1e"},
 ]
 beautifulsoup4 = [
-    {file = "beautifulsoup4-4.10.0-py3-none-any.whl", hash = "sha256:9a315ce70049920ea4572a4055bc4bd700c940521d36fc858205ad4fcde149bf"},
-    {file = "beautifulsoup4-4.10.0.tar.gz", hash = "sha256:c23ad23c521d818955a4151a67d81580319d4bf548d3d49f4223ae041ff98891"},
+    {file = "beautifulsoup4-4.11.1-py3-none-any.whl", hash = "sha256:58d5c3d29f5a36ffeb94f02f0d786cd53014cf9b3b3951d42e0080d8a9498d30"},
+    {file = "beautifulsoup4-4.11.1.tar.gz", hash = "sha256:ad9aa55b65ef2808eb405f46cf74df7fcb7044d5cbc26487f96eb2ef2e436693"},
 ]
 bleach = [
-    {file = "bleach-4.1.0-py2.py3-none-any.whl", hash = "sha256:4d2651ab93271d1129ac9cbc679f524565cc8a1b791909c4a51eac4446a15994"},
-    {file = "bleach-4.1.0.tar.gz", hash = "sha256:0900d8b37eba61a802ee40ac0061f8c2b5dee29c1927dd1d233e075ebf5a71da"},
+    {file = "bleach-5.0.0-py3-none-any.whl", hash = "sha256:08a1fe86d253b5c88c92cc3d810fd8048a16d15762e1e5b74d502256e5926aa1"},
+    {file = "bleach-5.0.0.tar.gz", hash = "sha256:c6d6cc054bdc9c83b48b8083e236e5f00f238428666d2ce2e083eaa5fd568565"},
 ]
 brotli = [
     {file = "Brotli-1.0.9-cp27-cp27m-macosx_10_9_x86_64.whl", hash = "sha256:268fe94547ba25b58ebc724680609c8ee3e5a843202e9a381f6f9c5e8bdb5c70"},
@@ -2311,8 +2316,8 @@ flask-compress = [
     {file = "Flask_Compress-1.11-py3-none-any.whl", hash = "sha256:7ccc4102104a63e6207f39eb307f99aebbfbaf4e70992d727440cff29119a0a0"},
 ]
 fonttools = [
-    {file = "fonttools-4.31.2-py3-none-any.whl", hash = "sha256:2df636a3f402ef14593c6811dac0609563b8c374bd7850e76919eb51ea205426"},
-    {file = "fonttools-4.31.2.zip", hash = "sha256:236b29aee6b113e8f7bee28779c1230a86ad2aac9a74a31b0aedf57e7dfb62a4"},
+    {file = "fonttools-4.32.0-py3-none-any.whl", hash = "sha256:b038d1a0dee0079de7ade57071e2e2aced6e35bd697de244ac62938b2b1628c1"},
+    {file = "fonttools-4.32.0.zip", hash = "sha256:59a90de72149893167e3d552ae2402c6874e006b9adc3feaf5f6d706fe20d392"},
 ]
 frozenlist = [
     {file = "frozenlist-1.3.0-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:d2257aaba9660f78c7b1d8fea963b68f3feffb1a9d5d05a18401ca9eb3e8d0a3"},
@@ -2388,8 +2393,8 @@ gitpython = [
     {file = "GitPython-3.1.27.tar.gz", hash = "sha256:1c885ce809e8ba2d88a29befeb385fcea06338d3640712b59ca623c220bb5704"},
 ]
 google-auth = [
-    {file = "google-auth-2.6.2.tar.gz", hash = "sha256:60d449f8142c742db760f4c0be39121bc8d9be855555d784c252deaca1ced3f5"},
-    {file = "google_auth-2.6.2-py2.py3-none-any.whl", hash = "sha256:3ba4d63cb29c1e6d5ffcc1c0623c03cf02ede6240a072f213084749574e691ab"},
+    {file = "google-auth-2.6.3.tar.gz", hash = "sha256:d65bb0e3701eaaa64fd2aa85e1325580524b0bddc6dc5db3ab89c481b6a20141"},
+    {file = "google_auth-2.6.3-py2.py3-none-any.whl", hash = "sha256:5e079eb4d21df1853d55cf2b6766b77ef36f7f7bdaf7d4a70434aa97c7578d60"},
 ]
 google-auth-oauthlib = [
     {file = "google-auth-oauthlib-0.4.6.tar.gz", hash = "sha256:a90a072f6993f2c327067bf65270046384cda5a8ecb20b94ea9a687f1f233a7a"},
@@ -2456,8 +2461,8 @@ idna = [
     {file = "idna-3.3.tar.gz", hash = "sha256:9d643ff0a55b762d5cdb124b8eaa99c66322e2157b69160bc32796e824360e6d"},
 ]
 ipykernel = [
-    {file = "ipykernel-6.12.1-py3-none-any.whl", hash = "sha256:d840e3bf1c4b23bf6939f78dcdae639c9f6962e41d17e1c084a18c3c7f972d3a"},
-    {file = "ipykernel-6.12.1.tar.gz", hash = "sha256:0868f5561729ade444011f8ca7d3502dc9f27f7f44e20f1d5fee7e1f2b7183a1"},
+    {file = "ipykernel-6.13.0-py3-none-any.whl", hash = "sha256:2b0987af43c0d4b62cecb13c592755f599f96f29aafe36c01731aaa96df30d39"},
+    {file = "ipykernel-6.13.0.tar.gz", hash = "sha256:0e28273e290858393e86e152b104e5506a79c13d25b951ac6eca220051b4be60"},
 ]
 ipython = [
     {file = "ipython-8.2.0-py3-none-any.whl", hash = "sha256:1b672bfd7a48d87ab203d9af8727a3b0174a4566b4091e9447c22fb63ea32857"},
@@ -2492,8 +2497,8 @@ jsonschema = [
     {file = "jsonschema-4.4.0.tar.gz", hash = "sha256:636694eb41b3535ed608fe04129f26542b59ed99808b4f688aa32dcf55317a83"},
 ]
 jupyter-client = [
-    {file = "jupyter_client-7.2.1-py3-none-any.whl", hash = "sha256:d10e31ac4b8364d1cb30ebcee9e5cc7b7eb5d23b76912be9ef3d4c75167fbc68"},
-    {file = "jupyter_client-7.2.1.tar.gz", hash = "sha256:aa177279e93205d0681ec0e2e210da01b22c5a1464a56abd455adcac64f0de91"},
+    {file = "jupyter_client-7.2.2-py3-none-any.whl", hash = "sha256:44045448eadc12493d819d965eb1dc9d10d1927698adbb9b14eb9a3a4a45ba53"},
+    {file = "jupyter_client-7.2.2.tar.gz", hash = "sha256:8fdbad344a8baa6a413d86d25bbf87ce21cb2b4aa5a8e0413863b9754eb8eb8a"},
 ]
 jupyter-core = [
     {file = "jupyter_core-4.9.2-py3-none-any.whl", hash = "sha256:f875e4d27e202590311d468fa55f90c575f201490bd0c18acabe4e318db4a46d"},
@@ -2508,12 +2513,12 @@ jupyter-server = [
     {file = "jupyter_server-1.16.0.tar.gz", hash = "sha256:c756f87ad64b84e2aa522ef482445e1a93f7fe4a5fc78358f4636e53c9a0463a"},
 ]
 jupyterlab = [
-    {file = "jupyterlab-3.3.2-py3-none-any.whl", hash = "sha256:32c9e3fae93d02f7a071f5e69a7a5450fa4bf087dd3d5aca58c7dd2adf2565d3"},
-    {file = "jupyterlab-3.3.2.tar.gz", hash = "sha256:3c716bf5592cb28c5c55c615c6e5bd3efc71898f6957d13719b56478bbbb587a"},
+    {file = "jupyterlab-3.3.3-py3-none-any.whl", hash = "sha256:60b8d2e013621b044cf2ca82fff199dfda6db803eb4d0b9fe62678fabb29d841"},
+    {file = "jupyterlab-3.3.3.tar.gz", hash = "sha256:294d67126015ba397f6b1c80563deec862e47e042623851bbe2a7d870d69eb6a"},
 ]
 jupyterlab-pygments = [
-    {file = "jupyterlab_pygments-0.1.2-py2.py3-none-any.whl", hash = "sha256:abfb880fd1561987efaefcb2d2ac75145d2a5d0139b1876d5be806e32f630008"},
-    {file = "jupyterlab_pygments-0.1.2.tar.gz", hash = "sha256:cfcda0873626150932f438eccf0f8bf22bfa92345b814890ab360d666b254146"},
+    {file = "jupyterlab_pygments-0.2.0-py2.py3-none-any.whl", hash = "sha256:8feffeec1799aaaea5b889add289e0c6dd648ea049be800fde814de46bf99f83"},
+    {file = "jupyterlab_pygments-0.2.0.tar.gz", hash = "sha256:2d48bcdd666043afc086af56adaf6bb79bbeffb1d73ed00ec4a2113f6cc22581"},
 ]
 jupyterlab-server = [
     {file = "jupyterlab_server-2.12.0-py3-none-any.whl", hash = "sha256:db5d234955c5c2684f77a064345712f071acf7df31f0d8c31b420b33b09d6472"},
@@ -2725,8 +2730,8 @@ nbclient = [
     {file = "nbclient-0.5.13.tar.gz", hash = "sha256:40c52c9b5e3c31faecaee69f202b3f53e38d7c1c563de0fadde9d7eda0fdafe8"},
 ]
 nbconvert = [
-    {file = "nbconvert-6.4.5-py3-none-any.whl", hash = "sha256:e01d219f55cc79f9701c834d605e8aa3acf35725345d3942e3983937f368ce14"},
-    {file = "nbconvert-6.4.5.tar.gz", hash = "sha256:21163a8e2073c07109ca8f398836e45efdba2aacea68d6f75a8a545fef070d4e"},
+    {file = "nbconvert-6.5.0-py3-none-any.whl", hash = "sha256:c56dd0b8978a1811a5654f74c727ff16ca87dd5a43abd435a1c49b840fcd8360"},
+    {file = "nbconvert-6.5.0.tar.gz", hash = "sha256:223e46e27abe8596b8aed54301fadbba433b7ffea8196a68fd7b1ff509eee99d"},
 ]
 nbformat = [
     {file = "nbformat-5.3.0-py3-none-any.whl", hash = "sha256:38856d97de49e8292e2d5d8f595e9d26f02abfd87e075d450af4511870b40538"},
@@ -2861,8 +2866,8 @@ plotly = [
     {file = "plotly-5.7.0.tar.gz", hash = "sha256:15ab20e9ed8b55f669b3d35e186eb48f9e1fe07321a1337b8b7df8d3573d265a"},
 ]
 prometheus-client = [
-    {file = "prometheus_client-0.14.0-py3-none-any.whl", hash = "sha256:f4aba3fdd1735852049f537c1f0ab177159b7ab76f271ecc4d2f45aa2a1d01f2"},
-    {file = "prometheus_client-0.14.0.tar.gz", hash = "sha256:8f7a922dd5455ad524b6ba212ce8eb2b4b05e073f4ec7218287f88b1cac34750"},
+    {file = "prometheus_client-0.14.1-py3-none-any.whl", hash = "sha256:522fded625282822a89e2773452f42df14b5a8e84a86433e3f8a189c1d54dc01"},
+    {file = "prometheus_client-0.14.1.tar.gz", hash = "sha256:5459c427624961076277fdc6dc50540e2bacb98eebde99886e59ec55ed92093a"},
 ]
 promise = [
     {file = "promise-2.3.tar.gz", hash = "sha256:dfd18337c523ba4b6a58801c164c1904a9d4d1b1747c7d5dbf45b693a49d93d0"},
@@ -2986,8 +2991,8 @@ pygments = [
     {file = "Pygments-2.11.2.tar.gz", hash = "sha256:4e426f72023d88d03b2fa258de560726ce890ff3b630f88c21cbb8b2503b8c6a"},
 ]
 pyparsing = [
-    {file = "pyparsing-3.0.7-py3-none-any.whl", hash = "sha256:a6c06a88f252e6c322f65faf8f418b16213b51bdfaece0524c1c1bc30c63c484"},
-    {file = "pyparsing-3.0.7.tar.gz", hash = "sha256:18ee9022775d270c55187733956460083db60b37d0d0fb357445f3094eed3eea"},
+    {file = "pyparsing-3.0.8-py3-none-any.whl", hash = "sha256:ef7b523f6356f763771559412c0d7134753f037822dad1b16945b7b846f7ad06"},
+    {file = "pyparsing-3.0.8.tar.gz", hash = "sha256:7bf433498c016c4314268d95df76c81b842a4cb2b276fa3312cfb1e1d85f6954"},
 ]
 pyrsistent = [
     {file = "pyrsistent-0.18.1-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:df46c854f490f81210870e509818b729db4488e1f30f2a1ce1698b2295a878d1"},
@@ -3258,8 +3263,8 @@ sniffio = [
     {file = "sniffio-1.2.0.tar.gz", hash = "sha256:c4666eecec1d3f50960c6bdf61ab7bc350648da6c126e3cf6898d8cd4ddcd3de"},
 ]
 soupsieve = [
-    {file = "soupsieve-2.3.1-py3-none-any.whl", hash = "sha256:1a3cca2617c6b38c0343ed661b1fa5de5637f257d4fe22bd9f1338010a1efefb"},
-    {file = "soupsieve-2.3.1.tar.gz", hash = "sha256:b8d49b1cd4f037c7082a9683dfa1801aa2597fb11c3a1155b7a5b94829b4f1f9"},
+    {file = "soupsieve-2.3.2-py3-none-any.whl", hash = "sha256:a714129d3021ec17ce5be346b1007300558b378332c289a1a20e7d4de6ff18a5"},
+    {file = "soupsieve-2.3.2.tar.gz", hash = "sha256:0bcc6d7432153063e3df09c3ac9442af3eba488715bfcad6a4c38ccb2a523124"},
 ]
 stack-data = [
     {file = "stack_data-0.2.0-py3-none-any.whl", hash = "sha256:999762f9c3132308789affa03e9271bbbe947bf78311851f4d485d8402ed858e"},
@@ -3284,13 +3289,13 @@ terminado = [
     {file = "terminado-0.13.3-py3-none-any.whl", hash = "sha256:874d4ea3183536c1782d13c7c91342ef0cf4e5ee1d53633029cbc972c8760bd8"},
     {file = "terminado-0.13.3.tar.gz", hash = "sha256:94d1cfab63525993f7d5c9b469a50a18d0cdf39435b59785715539dd41e36c0d"},
 ]
-testpath = [
-    {file = "testpath-0.6.0-py3-none-any.whl", hash = "sha256:8ada9f80a2ac6fb0391aa7cdb1a7d11cfa8429f693eda83f74dde570fe6fa639"},
-    {file = "testpath-0.6.0.tar.gz", hash = "sha256:2f1b97e6442c02681ebe01bd84f531028a7caea1af3825000f52345c30285e0f"},
-]
 threadpoolctl = [
     {file = "threadpoolctl-3.1.0-py3-none-any.whl", hash = "sha256:8b99adda265feb6773280df41eece7b2e6561b772d21ffd52e372f999024907b"},
     {file = "threadpoolctl-3.1.0.tar.gz", hash = "sha256:a335baacfaa4400ae1f0d8e3a58d6674d2f8828e3716bb2802c44955ad391380"},
+]
+tinycss2 = [
+    {file = "tinycss2-1.1.1-py3-none-any.whl", hash = "sha256:fe794ceaadfe3cf3e686b22155d0da5780dd0e273471a51846d0a02bc204fec8"},
+    {file = "tinycss2-1.1.1.tar.gz", hash = "sha256:b2e44dd8883c360c35dd0d1b5aad0b610e5156c2cb3b33434634e539ead9d8bf"},
 ]
 tomli = [
     {file = "tomli-2.0.1-py3-none-any.whl", hash = "sha256:939de3e7a6161af0c887ef91b7d41a53e7c5a1ca976325f429cb46ea9bc30ecc"},
@@ -3423,8 +3428,8 @@ urllib3 = [
     {file = "urllib3-1.26.9.tar.gz", hash = "sha256:aabaf16477806a5e1dd19aa41f8c2b7950dd3c746362d7e3223dbe6de6ac448e"},
 ]
 wandb = [
-    {file = "wandb-0.12.12-py2.py3-none-any.whl", hash = "sha256:067803dddb6af20b7fbbb1484cb163f96f27ed8c88a15a4c30bdacc454d7d596"},
-    {file = "wandb-0.12.12.tar.gz", hash = "sha256:b34da2d0cff2a45f9d4dc242993b20b029f67caf906bca10f7f73fcacd572690"},
+    {file = "wandb-0.12.14-py2.py3-none-any.whl", hash = "sha256:2bc25af123d98279acd2cdecf1c2911b1d0f456393fc3eebb0e5c199607c7f9a"},
+    {file = "wandb-0.12.14.tar.gz", hash = "sha256:15a6da8739ed098841dff3074dc8edcb818e118e7ded1649c183d158e212fe2d"},
 ]
 wcwidth = [
     {file = "wcwidth-0.2.5-py2.py3-none-any.whl", hash = "sha256:beb4802a9cebb9144e99086eff703a642a13d6a0052920003a230f3294bbe784"},

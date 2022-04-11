@@ -30,8 +30,9 @@ def get_args_parser(add_help=True):
 
 if __name__ == '__main__':
     args = get_args_parser().parse_args()
+    print("Loading model")
     model, args_file = serfiq.load_model(args.run_root)
-
+    print("Loading dataset")
     datamodule = dataset.IrisDataModule(
         args.dataset_root, 1, 1, 1,
         train_pseudolabels= None,
@@ -44,7 +45,9 @@ if __name__ == '__main__':
         test_transform= dataset.test_transform(**args_file['test_transform']),
         predict_transform= dataset.predict_transform(**args_file['predict_transform'])
     )
+    print("Setting up model")
     serfiq.setup_model(model)
+    print(f"Sending model to device {args.device}")
     device = torch.device(args.device)
     model = model.to(device)
     main(model, datamodule, device, args.run_root, args_file['run_name'])
