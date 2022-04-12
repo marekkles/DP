@@ -41,6 +41,7 @@ class SddFiqaNet(pl.LightningModule):
             **backbone_args, num_classes=1
         )
         if backbone_checkpoint_path is not None:
+            print(f"Loading checkpoint {backbone_checkpoint_path}")
             self.encoder.load_state_dict(torch.load(backbone_checkpoint_path), strict=False)
         self.loss = torch.nn.__dict__[loss](**(loss_args if loss_args != None else {}))
         self.optim = optim
