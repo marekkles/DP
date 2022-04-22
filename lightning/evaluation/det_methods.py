@@ -5,7 +5,7 @@ from sklearn.metrics import det_curve
 __all__ = [
     'det', 'det_for_irrs', 'fnmr_at_irr', 
     'generate_labels_scores', 'generate_labels_scores_quality',
-    'generate_sorted_labels_scores_quality'
+    'generate_sorted_labels_scores_quality', 'eer_at_irr'
 ]
 
 def det(
@@ -83,6 +83,19 @@ def fnmr_at_irr(
         graph.append((irr, fnmr[anchor_index]))
     return tuple(zip(*graph))
 
+def eer_at_irr(
+    sorted_labels: np.array, sorted_scores: np.array,
+    max_reject_rate: float = 0.15,
+    number_of_samples: float  = 100
+) -> Tuple[np.array, np.array]:
+
+    assert len(sorted_labels) == len(sorted_scores), "Different input lengths"
+    graph = []
+    rejection_rates = np.arange(0, max_reject_rate, max_reject_rate/number_of_samples)[:-1]
+    for irr, (fmr, fnmr, treashold) in det_for_irrs(sorted_labels, sorted_scores, rejection_rates):
+        anchor_index = np.argmin(np.abs(np.array(fmr) - np.array(fnmr)))
+        graph.append((irr, fnmr[anchor_index]))
+    return tuple(zip(*graph))
 
 def generate_labels_scores(
     pairs: Dict[Tuple[Any, Any], float],

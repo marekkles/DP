@@ -6,7 +6,10 @@ import plotly.io as pio
 from plotly.subplots import make_subplots
 import scipy as sp
 
-__all__ = ['plotly_recognition_performance', 'plotly_quality_performance']
+__all__ = [
+    'plotly_recognition_performance', 'plotly_quality_performance', 
+    'plotly_det_scatter', 'plotly_set_det_plot'
+]
 
 def plotly_det_scatter(fmr, fnmr,name="DET"):
     hovertext=[f"FMR: {x*100:.3f}% FNMR: {y*100:.3f}%" for (x, y) in zip(fmr, fnmr)]
