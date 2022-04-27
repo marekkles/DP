@@ -9,11 +9,7 @@ from metrics import UncertaintyHead, MLSLoss
 
 available_backbones = list(
     filter(
-        lambda x: 
-            x[0] != '_' and 
-            not x[0].isupper() and 
-            not x[1].isupper() and 
-            x[-1].isdigit(),
+        lambda x: True,
         backbones.__dict__
     )
 )

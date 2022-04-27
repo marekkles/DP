@@ -12,7 +12,7 @@ import torch.nn as nn
 import math
 
 
-__all__ = ['mobilenetv3_large', 'mobilenetv3_small']
+__all__ = ['MobileNetV3', 'mobilenetv3_large', 'mobilenetv3_small']
 
 
 def _make_divisible(v, divisor, min_value=None):
