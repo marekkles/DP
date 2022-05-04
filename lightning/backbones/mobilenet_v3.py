@@ -167,7 +167,7 @@ class MobileNetV3(nn.Module):
         x = self.conv(x)
         x = self.avgpool(x)
         x = x.view(x.size(0), -1)
-        x = x.repeat(repeat_before_dropout, 1, 1)
+        x = x.repeat(repeat_before_dropout, 1)
         x = self.classifier(x)
         return x
 
