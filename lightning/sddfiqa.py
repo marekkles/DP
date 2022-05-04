@@ -73,7 +73,8 @@ def main(args):
         batch_vectors = np.zeros((batch_size, K*m*2, vec_dim))
         batch_one_over = np.zeros((batch_size, K*m*2, 1))
 
-        for i in range(start_id, min(start_id+batch_size, len(permute_dict))):
+        limit = min(start_id+batch_size, len(permute_dict))
+        for i in range(start_id, limit):
             pair, impostor = permute_dict[idx_to_id[i]]
             idxs = np.array(
                 [id_to_idx[p] for p in pair ] + [id_to_idx[i] for i in impostor], 
@@ -83,7 +84,7 @@ def main(args):
             batch_one_over[i-start_id, :, :] = one_over_vector_len[idxs, np.newaxis]
             
             
-        distances_v[start_id:start_id+batch_size, :] = ((batch_vectors @ root_vectors) * batch_one_over * root_one_over)
+        distances_v[start_id:limit, :] = ((batch_vectors @ root_vectors) * batch_one_over * root_one_over)
 
     q = {}
     for idx in tqdm(range(len(permute_dict)), "Calculating wasserstein distances"):
