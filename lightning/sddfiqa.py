@@ -99,7 +99,7 @@ if __name__ == '__main__':
     args = get_args_parser().parse_args()
     print("Loading dataset")
     with open(os.path.join(args.run_root, 'args.yaml'), 'rb') as f:
-        args_file=yaml.load(f)
+        args_file=yaml.load(f, yaml.FullLoader)
     args_file['run_root']=args.run_root
     args_file['dataset_root']=args.dataset_root
     main(args_file)
