@@ -43,7 +43,7 @@ def main(args):
     rand_vec = {}
     run_name=args['run_name']
     run_root=args['run_root']
-    with open(os.path.join(run_root, f"embedding-{run_name}-iris_verification_pseudo.pickle", 'rb') as f:
+    with open(os.path.join(run_root, f"embedding-{run_name}-iris_verification_pseudo.pickle"), 'rb') as f:
         rand_vec = pickle.load(f)
 
     batch_size=32
