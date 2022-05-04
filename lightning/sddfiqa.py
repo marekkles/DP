@@ -20,6 +20,9 @@ def get_args_parser(add_help=True):
     return parser
 
 def main(args):
+    K=12
+    m=24
+
     ds = IrisVerificationDatasetPseudo(args['dataset_root'], 1, subsets=args['dataset_subsets'])
     image_ids= np.arange(len(ds.annotations), dtype=np.int32)
     image_classes = np.zeros(len(ds.annotations), dtype=np.int32)
