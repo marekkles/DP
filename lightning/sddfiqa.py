@@ -70,8 +70,9 @@ def main(args):
 
         root_vectors = vector_batch[start_id:start_id+batch_size, :, np.newaxis]
         root_one_over = one_over_vector_len[start_id:start_id+batch_size, np.newaxis, np.newaxis]
-        batch_vectors = np.zeros((batch_size, K*m*2, vec_dim))
-        batch_one_over = np.zeros((batch_size, K*m*2, 1))
+        root_vectors_batch_size=root_vectors.shape[0]
+        batch_vectors = np.zeros((root_vectors_batch_size, K*m*2, vec_dim))
+        batch_one_over = np.zeros((root_vectors_batch_size, K*m*2, 1))
 
         limit = min(start_id+batch_size, len(permute_dict))
         for i in range(start_id, limit):
