@@ -162,11 +162,12 @@ class MobileNetV3(nn.Module):
 
         self._initialize_weights()
 
-    def forward(self, x):
+    def forward(self, x, repeat_before_dropout=1):
         x = self.features(x)
         x = self.conv(x)
         x = self.avgpool(x)
         x = x.view(x.size(0), -1)
+        x = x.repeat(repeat_before_dropout, 1, 1)
         x = self.classifier(x)
         return x
 

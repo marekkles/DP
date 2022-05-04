@@ -250,7 +250,7 @@ class iResNet(nn.Module):
 
         return nn.Sequential(*layers)
 
-    def forward(self, x):
+    def forward(self, x, repeat_before_dropout=1):
         x = self.conv1(x)
         x = self.bn1(x)
         x = self.relu(x)
@@ -263,6 +263,7 @@ class iResNet(nn.Module):
         x = self.avgpool(x)
         x = x.view(x.size(0), -1)
 
+        x = x.repeat(repeat_before_dropout, 1, 1)
         if self.dp is not None:
             x = self.dp(x)
 
