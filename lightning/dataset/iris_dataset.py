@@ -295,6 +295,13 @@ class IrisVerificationDatasetV2(IrisDatasetBase):
             csv_file = csv.reader(csvfile, delimiter=';', quotechar='"')
             next(csv_file)
             self.raw = [(x[0], x[1], int(x[2])) for x in csv_file]
+            self.raw = list(
+                filter(
+                    lambda x: (not x[0].startswith('iris_nd_0405@00_04699')) and  (not x[1].startswith('iris_nd_0405@00_04699')), 
+                    self.raw
+                )
+            )
+
             self.impostors = [
                 (x[0], x[1]) for x in filter(
                     lambda x: x[2] == 0, self.raw

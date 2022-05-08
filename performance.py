@@ -60,6 +60,9 @@ layout = html.Div([
                 id='quality-metric-dropdown', clearable=True,
                 value=None, options=[],
                 style={'width': '100%'}),
+            html.Label("False match rate",
+                style={'width': '100%'}),
+            dcc.Slider(0, 7, id='fmr-metric-slider', value=0.1, step=0.1),
             html.Label("Reject rate",
                 style={'width': '100%'}),
             dcc.Slider(0, 30, id='quality-metric-slider', value=10),
@@ -162,6 +165,7 @@ def load_runs_list(runs):
             "label" : f"~~~ {project_name} ~~~",
             "value" : ''
         })
+        proj_dict[project_name].sort(key=lambda x: x)
         for name, path in proj_dict[project_name]:
             lt.append({
                 "label" : name,
@@ -204,8 +208,8 @@ def load_run(input_value):
             a = yaml.dump(app_state["args"], indent=2)
             l = app_state["args"]['project_name']
         df = pd.read_csv(os.path.join(input_value, 'csvs', 'metrics.csv'))
-        df_train = df.dropna(subset=['train_acc', 'train_loss', 'step'])
-        df_val = df.dropna(subset=['val_acc', 'val_loss', 'step', 'epoch'])
+        df_train = df.dropna(subset=[ 'train_loss', 'step'])
+        df_val = df.dropna(subset=['val_loss', 'step', 'epoch'])
         fig = py.subplots.make_subplots(rows=1, cols=2)
         fig.add_traces(
             [
@@ -314,6 +318,7 @@ def load_metric(input_value):
 
 @app.callback(
     Output(component_id='quality-metric-slider', component_property='value'),
+    Output(component_id='fmr-metric-slider', component_property='value'),
     Input(component_id='quality-metric-dropdown', component_property='value')
 )
 def load_quality(input_value):
@@ -341,22 +346,22 @@ def load_quality(input_value):
                     app_state["quality"][q] = app_state["quality"][q].item()
             if input_value.split('/')[-1].split('-')[1] == 'DfsNet':
                 app_state["quality"] = {k: v for k, v in app_state["quality"].items()}
-        
             
         labels, scores, quality_scores = generate_sorted_labels_scores_quality(app_state["scores"]['pairs'], app_state["scores"]['impostors'], app_state["quality"])
         scores = -scores
-        irr, fnmr = eer_at_irr(labels, scores, max_reject_rate=0.2)
+        irr, fnmr = fnmr_at_irr(labels, scores, max_reject_rate=0.2)
         app_state["fnmr_at_irr"] = fnmr
         app_state["irr"] = irr
-        return 10
+        return 10, 0.1
     else:
-        return 0
+        return 0, 0
 
 @app.callback(
     Output(component_id='quality-graph', component_property='figure'),
-    Input(component_id='quality-metric-slider', component_property='value')
+    Input(component_id='quality-metric-slider', component_property='value'),
+    Input(component_id='fmr-metric-slider', component_property='value')
 )
-def set_quality(input_value):
+def set_quality(input_value, input_value2):
     global app_state
 
     app_state["quality_dets"] = None
@@ -369,6 +374,23 @@ def set_quality(input_value):
     else:
         plt = py.subplots.make_subplots(rows=1, cols=2)
     return plt
+
+#@app.callback(
+#    Output(component_id='quality-graph', component_property='figure'),
+#    Input(component_id='fmr-metric-slider', component_property='value')
+#)
+#def set_quality_irr(input_value):
+#    global app_state
+#    if input_value is not None and app_state["quality"] != None and app_state["quality_dets"] != None and app_state["scores"] != None:
+#        labels, scores, quality_scores = generate_sorted_labels_scores_quality(app_state["scores"]['pairs'], app_state["scores"]['impostors'], app_state["quality"])
+#        scores = -scores
+#        irr, fnmr = fnmr_at_irr(labels, scores, max_reject_rate=0.2, fmr_anchor=input_value/100.0)
+#        app_state["fnmr_at_irr"] = fnmr
+#        app_state["irr"] = irr
+#        plt = plotly_quality_performance(app_state["irr"], app_state["fnmr_at_irr"], app_state["quality_dets"])
+#    else:
+#        plt = py.subplots.make_subplots(rows=1, cols=2)
+#    return plt
 
 @app.callback(
     Output(component_id='save-recognition-status', component_property='children'),

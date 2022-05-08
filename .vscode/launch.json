@@ -23,6 +23,16 @@
             //"args": ["--resume-dir", "runs/RecognitionNet-magiresnet50-ArcFaceLoss-arzKXb", "--mode", "evaluate"],
             "args": ["--run-root", "runs/RecognitionNet-magiresnet50-ArcFaceLoss-arzKXb", "--dataset-root", "../Datasets", "--device", "cpu"],
             "justMyCode": true
+        },
+        {
+            "name": "Python: Current File SDD-FIQA",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            //"args": ["--resume-dir", "runs/RecognitionNet-magiresnet50-ArcFaceLoss-arzKXb", "--mode", "evaluate"],
+            "args": ["--run-root", "runs/RecognitionNet-magiresnet50-ArcFaceLoss-arzKXb", "--dataset-root", "../Datasets"],
+            "justMyCode": true
         }
     ]
 }

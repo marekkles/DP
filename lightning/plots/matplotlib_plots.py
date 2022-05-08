@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as mtick
 import numpy as np
 import scipy as sp
+from scipy import stats
 
 __all__ = ['matplotlib_plot_det', 'matplotlib_plot_dets', 
     'matplotlib_quality_performance', 'matplotlib_recognition_performance']
@@ -9,8 +10,8 @@ __all__ = ['matplotlib_plot_det', 'matplotlib_plot_dets',
 CM_TO_INCH = 1.0/2.5
 
 def matplotlib_plot_det(fmr, fnmr, ax, label=""):
-    x = np.array(sp.stats.norm.ppf(fmr))
-    y = np.array(sp.stats.norm.ppf(fnmr))
+    x = np.array(stats.norm.ppf(fmr))
+    y = np.array(stats.norm.ppf(fnmr))
     ax.plot(x, y, label=label)
     ticks = [0.004,0.01, 0.023, 0.05, 0.1, 0.20, 0.5, 0.80, 0.95, 0.99, 0.999]
     tick_locations = sp.stats.norm.ppf(ticks)
@@ -20,10 +21,10 @@ def matplotlib_plot_det(fmr, fnmr, ax, label=""):
     ]
     ax.set_xticks(tick_locations)
     ax.set_xticklabels(tick_labels)
-    ax.set_xlim(-3, -1.5)
+    ax.set_xlim(-3, -2)
     ax.set_yticks(tick_locations)
     ax.set_yticklabels(tick_labels)
-    ax.set_ylim(-3, -1)
+    ax.set_ylim(-3, -2)
 
 def matplotlib_plot_dets(dets: dict, ax):
     for det in dets:
