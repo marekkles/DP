@@ -79,10 +79,13 @@ def pfe_quality(log_sigma):
     return stats.hmean(log_sigma)
 
 # %%
-def main(runs_root = 'runs_mnt', datasets_path = 'datasets.pickle', scores_path = 'scores.pickle', quality_path = 'qualities.pickle'):
+def main(runs_root = 'runs_mnt', comments_path = 'comments.pickle', datasets_path = 'datasets.pickle', scores_path = 'scores.pickle', quality_path = 'qualities.pickle'):
     global datasets
     global comments
     global scores
+
+    with open(comments_path, 'wb') as f:
+        pickle.dump(comments, f)
 
     with open(datasets_path, 'rb') as f:
         datasets = pickle.load(f)
