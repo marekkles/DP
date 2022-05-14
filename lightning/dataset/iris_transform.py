@@ -12,11 +12,11 @@ def train_transform(
 ):
     return transforms.Compose([
         transforms.ConvertImageDtype(torch.float),
+        transforms.RandomAffine(**RandomAffine),
+        transforms.Resize(**Resize),
         transforms.RandomAdjustSharpness(**RandomAdjustSharpness),
         transforms.RandomAutocontrast(**RandomAutocontrast),
         transforms.RandomInvert(**RandomInvert),
-        transforms.RandomAffine(**RandomAffine),
-        transforms.Resize(**Resize),
         transforms.Normalize(**Normalize),
         transforms.RandomErasing(**RandomErasing),
     ])
