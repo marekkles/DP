@@ -3,6 +3,8 @@ import copy
 from PIL import Image,ImageDraw
 import os
 
+__all__ = ['IrisImage']
+
 class IrisImage(object):
     def __init__(self, header: Optional[list] = None, param_list: Optional[list] = None, dataset_root: Optional[str] = None) -> None:
         super().__init__()

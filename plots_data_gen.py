@@ -79,7 +79,7 @@ def pfe_quality(log_sigma):
     return stats.hmean(log_sigma)
 
 # %%
-def main(runs_root = 'runs_mnt', comments_path = 'comments.pickle', datasets_path = 'datasets.pickle', scores_path = 'scores.pickle', quality_path = 'qualities.pickle'):
+def main(runs_root = 'runs_mnt', comments_path = 'comments.pickle', datasets_path = 'datasets.pickle', scores_path = 'scores.pickle', quality_save_path = 'qualities.pickle'):
     global datasets
     global comments
     global scores
@@ -171,31 +171,27 @@ def main(runs_root = 'runs_mnt', comments_path = 'comments.pickle', datasets_pat
             elif net == 'SddFiqaNet' or net == 'CrFiqaNet' or net == 'DfsNet':
                 print('QualityNet')
                 quality_path = os.path.join(runroot, f'quality-{runname}-{d}.pickle')
-                if os.path.isfile(quality_path):
-                    print('Found quality')
-                    with open(quality_path, 'rb') as f:
-                        qualities[d+'+'+run] = pickle.load(f)
-                    for k in qualities[d+'+'+run]:
-                        qualities[d+'+'+run][k] = np.average(qualities[d+'+'+run][k])
-                        if net == 'DfsNet':
-                            qualities[d+'+'+run][k] = -qualities[d+'+'+run][k]
+                with open(quality_path, 'rb') as f:
+                    qualities[d+'+'+run] = pickle.load(f)
+                for k in qualities[d+'+'+run]:
+                    qualities[d+'+'+run][k] = np.average(qualities[d+'+'+run][k])
+                    if net == 'DfsNet':
+                        qualities[d+'+'+run][k] = -qualities[d+'+'+run][k]
             elif net == 'PfeNet':
                 print('PfeNet')
                 pfe_path = os.path.join(runroot, f'deviation-{runname}-{d}.pickle')
-                if os.path.isfile(pfe_path):
-                    print('Found pfe')
-                    with open(pfe_path, 'rb') as f:
-                        deviation = pickle.load(f)
-                    qualities[d+'+'+run] = {}
-                    for k in deviation:
-                        qualities[d+'+'+run][k] = pfe_quality(np.exp(deviation[k]))
-                        qualities[d+'+'+run][k] = -qualities[d+'+'+run][k]
+                with open(pfe_path, 'rb') as f:
+                    deviation = pickle.load(f)
+                qualities[d+'+'+run] = {}
+                for k in deviation:
+                    qualities[d+'+'+run][k] = pfe_quality(np.exp(deviation[k]))
+                    qualities[d+'+'+run][k] = -qualities[d+'+'+run][k]
 
-    with open(quality_path, 'wb') as f:
+    with open(quality_save_path, 'wb') as f:
         pickle.dump(qualities, f)
 
 
 
 if __name__ == '__main__':
     import sys
-    main(sys.argv[1])
+    main(sys.argv[1] if len(sys.argv) > 1 else 'runs_mnt')

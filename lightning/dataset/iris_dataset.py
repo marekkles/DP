@@ -116,16 +116,16 @@ class IrisDatasetBase(VisionDataset):
         img_binary = self.get_img_binary(index)
         pic = Image.open(io.BytesIO(img_binary)).convert('L')
         if self.autocrop:
-            pic = self.__crop(
+            pic = self.crop(
                 pic, 
                 float(annotation['pos_x']),
                 float(annotation['pos_y']),
                 float(annotation['radius_1']),
             )
-        img = self.__to_tensor(pic)
+        img = self.to_tensor(pic)
         if self.unwrap:
             assert self.autocrop, "Needs autocrop to unwrap"
-            img = self.__unwrap(img, float(annotation['radius_1']))
+            img = self.unwrap(img, float(annotation['radius_1']))
         return img
     def __getitem__(self, index: int) -> Tuple[torch.Tensor, Any]:
         """Indexing in dataset. Returns a tuple of input tensor and a label.
@@ -154,7 +154,7 @@ class IrisDatasetBase(VisionDataset):
     # # # # # # # # # #  STATIC METHODS   # # # # # # # # # # # # # # #
     # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
     @staticmethod
-    def __to_tensor(pic: Image) -> torch.Tensor:
+    def to_tensor(pic: Image) -> torch.Tensor:
         """Transfrom input image to tensor withowt any warnings
 
         Args:
@@ -169,7 +169,7 @@ class IrisDatasetBase(VisionDataset):
         # put it from HWC to CHW format
         return img.permute((2, 0, 1))
     @staticmethod
-    def __unwrap(img: torch.Tensor, radius_1: float) -> torch.Tensor:
+    def unwrap(img: torch.Tensor, radius_1: float) -> torch.Tensor:
         """Unwrap iris image into polar coordinates
 
         Args:
@@ -188,7 +188,7 @@ class IrisDatasetBase(VisionDataset):
         y = (radius.T @ torch.cos(theta)[None,:] + iris_radius).flatten().long()
         return img[0][x,y].reshape((radius.shape[1], theta.shape[1]))[None,:]
     @staticmethod
-    def __crop(pic: Image, pos_x: float, pos_y: float, radius_1: float) -> Image:
+    def crop(pic: Image, pos_x: float, pos_y: float, radius_1: float) -> Image:
         """Crop image to position and size of the iris 
 
         Args:
